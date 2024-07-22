@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"syscall/js"
 
@@ -23,20 +24,47 @@ func (ps *PlayerStats) AverageKillValue() float64 {
 	return float64(ps.TotalValue) / float64(ps.Kills)
 }
 
+type ProgressReader struct {
+	reader       io.Reader
+	totalSize    int64
+	bytesRead    int64
+	progressFunc func(progress float64)
+}
+
+func (p *ProgressReader) Read(b []byte) (int, error) {
+	n, err := p.reader.Read(b)
+	p.bytesRead += int64(n)
+	if p.totalSize > 0 {
+		progress := float64(p.bytesRead) / float64(p.totalSize) * 100
+		p.progressFunc(progress)
+	}
+	return n, err
+}
+
+func NewProgressReader(reader io.Reader, totalSize int64, progressFunc func(progress float64)) *ProgressReader {
+	return &ProgressReader{
+		reader:       reader,
+		totalSize:    totalSize,
+		progressFunc: progressFunc,
+	}
+}
+
 func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	js.Global().Call("postMessage", "Starting parse...")
 
 	reader := bytes.NewReader(data)
-	p := dem.NewParser(reader)
+	progressReader := NewProgressReader(reader, int64(len(data)), func(progress float64) {
+		js.Global().Call("postMessage", fmt.Sprintf("Progress: %.2f%%", progress))
+	})
+	p := dem.NewParser(progressReader)
 	defer p.Close()
 
 	playerStats := make(map[string]*PlayerStats)
-
 	roundNum := 0
+
+	// Register an event handler to track round end
 	p.RegisterEventHandler(func(e events.RoundEnd) {
-		// Increment the round number
 		roundNum++
-		// Send a simple formatted string to JavaScript
 		updateMessage := fmt.Sprintf("Round=%d", roundNum)
 		js.Global().Call("postMessage", updateMessage)
 	})
@@ -69,10 +97,6 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		if killerValue > attackerThreshold && victimValue < victimThreshold {
 			playerStats[killerName].EcoKills++
 		}
-
-		// Optionally, you can still send interim updates
-		// updateMessage := fmt.Sprintf("%s: Kills=%d, EcoKills=%d, TotalValue=%d", killerName, playerStats[killerName].Kills, playerStats[killerName].EcoKills, playerStats[killerName].TotalValue)
-		// js.Global().Call("postMessage", updateMessage)
 	})
 
 	if err := p.ParseToEnd(); err != nil {

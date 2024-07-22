@@ -1,0 +1,66 @@
+Filename: ./worker.js
+importScripts("wasm_exec.js");
+
+const go = new Go();
+
+WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject)
+  .then((result) => {
+    console.log("WebAssembly instantiated");
+    go.run(result.instance);
+  })
+  .catch((err) => {
+    console.error("Failed to load WASM:", err);
+  });
+
+onmessage = function (event) {
+  const data = event.data;
+  console.log("Data received in worker");
+  analyzeDemo(data); // This function is exposed by your Go code
+};
+
+// Function to receive output from Go
+function handleOutput(e) {
+  console.log("Output from Go:", e.data);
+}
+
+// Setup listener for messages coming from Go
+self.addEventListener("message", (e) => {
+  handleOutput(e.data);
+});
+
+Filename: ./main.js
+const worker = new Worker("worker.js");
+
+document.getElementById("fileInput").addEventListener("change", (event) => {
+  console.log("File Recived");
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function () {
+    const arrayBuffer = reader.result;
+    const uint8Array = new Uint8Array(arrayBuffer);
+    worker.postMessage(uint8Array, [uint8Array.buffer]);
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+worker.onmessage = function (event) {
+  console.log("Processed data received:", event.data);
+};
+
+// Setup listener for messages coming from Go
+self.addEventListener("message", (e) => {
+  handleOutput(e.data);
+});
+
+Filename: ./index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Go WebAssembly and Web Worker Example</title>
+</head>
+<body>
+    <input type="file" id="fileInput">
+    <script src="main.js"></script>
+</body>
+</html>

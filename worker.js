@@ -12,7 +12,14 @@ WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject)
   });
 
 onmessage = function (event) {
-  const data = event.data;
+  const data = event.data.data;
+  const attackerThreshold = event.data.attackerThreshold;
+  const victimThreshold = event.data.victimThreshold;
   postMessage("Data received in worker");
-  analyzeDemo(data); // This function is exposed by your Go code
+
+  if (typeof analyzeDemo === "function") {
+    analyzeDemo(data, attackerThreshold, victimThreshold);
+  } else {
+    postMessage("analyzeDemo function is not defined.");
+  }
 };

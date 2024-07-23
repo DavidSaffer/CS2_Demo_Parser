@@ -11,6 +11,8 @@ import (
 	events "github.com/markus-wa/demoinfocs-golang/v4/pkg/demoinfocs/events"
 )
 
+// GOOS=js GOARCH=wasm go build -o main.wasm
+
 type PlayerStats struct {
 	Kills      int
 	EcoKills   int // Count of eco frags

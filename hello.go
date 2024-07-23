@@ -9,6 +9,7 @@ import (
 	"syscall/js"
 
 	dem "github.com/markus-wa/demoinfocs-golang/v4/pkg/demoinfocs"
+	. "github.com/markus-wa/demoinfocs-golang/v4/pkg/demoinfocs/common"
 	events "github.com/markus-wa/demoinfocs-golang/v4/pkg/demoinfocs/events"
 )
 
@@ -18,6 +19,8 @@ type PlayerStats struct {
 	Kills      int
 	EcoKills   int // Count of eco frags
 	TotalValue int
+	Team 	 Team
+	EcoKillRounds []int
 }
 
 func (ps *PlayerStats) AverageKillValue() float64 {
@@ -63,7 +66,7 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	defer p.Close()
 
 	playerStats := make(map[string]*PlayerStats)
-	roundNum := 0
+	roundNum := 1
 
 	// Register an event handler to track round end
 	p.RegisterEventHandler(func(e events.RoundEnd) {
@@ -79,26 +82,37 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		killerName := e.Killer.Name
 		victimName := e.Victim.Name
-		killerValue := e.Killer.EquipmentValueFreezeTimeEnd()
-		victimValue := e.Victim.EquipmentValueFreezeTimeEnd()
+		killerValue := e.Killer.EquipmentValueCurrent()
+		victimValue := e.Victim.EquipmentValueCurrent()
 
 		if killerName == victimName {
 			return // Ignoring self-kills
 		}
 
+		// Initialize stats if the player is not already in the map
 		if _, ok := playerStats[killerName]; !ok {
-			playerStats[killerName] = &PlayerStats{}
+			playerStats[killerName] = &PlayerStats{
+				Team: e.Killer.Team,
+				EcoKillRounds: []int{},
+			}
 		}
 		if _, ok := playerStats[victimName]; !ok {
-			playerStats[victimName] = &PlayerStats{}
+			playerStats[victimName] = &PlayerStats{
+				Team: e.Victim.Team,
+				EcoKillRounds: []int{},
+			}
 		}
 
 		playerStats[killerName].Kills++
 		playerStats[killerName].TotalValue += victimValue
 
 		// Check if it's an eco kill
-		if killerValue > attackerThreshold && victimValue < victimThreshold {
+		isEco := (killerValue > attackerThreshold) && (victimValue < victimThreshold) && ((killerValue - victimValue) > 500)
+		if isEco {
 			playerStats[killerName].EcoKills++
+			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
+			updateMessage := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Value :$ %d, Victim Value: $ %d", roundNum, killerName, killerValue, victimValue)
+			js.Global().Call("postMessage", updateMessage)
 		}
 	})
 
@@ -122,6 +136,7 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	msg := map[string]interface{}{
 		"type": "PlayerStats",
 		"data": json.RawMessage(statsJSON),
+		"totalRounds": roundNum,
 	}
 	msgJSON, err := json.Marshal(msg)
 	if err != nil {

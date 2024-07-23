@@ -17,8 +17,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BarChart from "../bar-graph/BarGraph";
 
 const PlayerStatsTable = ({ playerStats }) => {
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("Player");
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("EcoKills");
   const columns = ["Player", "Kills", "EcoKills", "TotalValue", "AvgKillValue"];
   const [expanded, setExpanded] = useState({});
 
@@ -63,6 +63,7 @@ const PlayerStatsTable = ({ playerStats }) => {
       [teamId]: isExpanded ? !prevExpanded[teamId] : false,
     }));
   };
+  console.log("Team Bar Graph Data:", teamBarGraphData);
 
   const renderTeamTable = (teamPlayers, teamId) => {
     const sortedPlayerStats = teamPlayers.sort((a, b) => {

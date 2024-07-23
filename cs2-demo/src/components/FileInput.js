@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import ProgressBar from 'react-bootstrap/ProgressBar';
-import Button from 'react-bootstrap/Button';
-import styles from './FileInput.module.css';
-import PlayerStatsTable from './player-stats/PlayerStatsTable';
+import React, { useState, useRef, useEffect } from "react";
+import ProgressBar from "react-bootstrap/ProgressBar";
+import Button from "react-bootstrap/Button";
+import styles from "./FileInput.module.css";
+import PlayerStatsTable from "./player-stats/PlayerStatsTable";
 
 function FileInput() {
   const [messages, setMessages] = useState([]);
@@ -17,32 +17,30 @@ function FileInput() {
     workerRef.current = new Worker(`${process.env.PUBLIC_URL}/worker.js`);
 
     workerRef.current.onmessage = (event) => {
-        
       const message = event.data;
-      console.log(message)
+      console.log(message);
       if (message.startsWith("Progress:")) {
-        const progressValue = parseFloat(message.split(':')[1]);
+        const progressValue = parseFloat(message.split(":")[1]);
         setProgress(progressValue);
-      } else if (message.startsWith('{')){
+      } else if (message.startsWith("{")) {
         // The message looks like a JSON string
         try {
-            const json = JSON.parse(message);
-            switch (json.type) {
-                case "PlayerStats":
-                    setPlayerStats(json.data)
-                    setLoading(false); // Stop loading once the final message is received
-                    break;
-                case "Error":
-                    console.error("Error from worker:", json.data);
-                    break;
-                default:
-                    console.log("Unhandled message type:", json.type);
-            }
+          const json = JSON.parse(message);
+          switch (json.type) {
+            case "PlayerStats":
+              setPlayerStats(json.data);
+              setLoading(false); // Stop loading once the final message is received
+              break;
+            case "Error":
+              console.error("Error from worker:", json.data);
+              break;
+            default:
+              console.log("Unhandled message type:", json.type);
+          }
         } catch (error) {
-            console.error("Failed to parse JSON message:", message, error);
+          console.error("Failed to parse JSON message:", message, error);
         }
-      }
-      else {
+      } else {
         appendMessage(message);
         if (message.startsWith("Final Player Stats")) {
           setLoading(false); // Stop loading once the final message is received
@@ -56,7 +54,7 @@ function FileInput() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleFileChange = (event) => {
@@ -66,14 +64,20 @@ function FileInput() {
   };
 
   const handleProcessFile = () => {
-    setPlayerStats({})
+    setPlayerStats({});
     if (!file) {
       appendMessage("No file selected.");
       return;
     }
     setLoading(true); // Start loading
-    const attackerThreshold = parseInt(document.getElementById("attackerThreshold").value, 10);
-    const victimThreshold = parseInt(document.getElementById("victimThreshold").value, 10);
+    const attackerThreshold = parseInt(
+      document.getElementById("attackerThreshold").value,
+      10
+    );
+    const victimThreshold = parseInt(
+      document.getElementById("victimThreshold").value,
+      10
+    );
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -89,36 +93,73 @@ function FileInput() {
   };
 
   const appendMessage = (message) => {
-    setMessages(prev => [...prev, message]);
+    setMessages((prev) => [...prev, message]);
   };
 
   return (
-    <div className={styles.container}>
-      <input type="file" className={styles.fileInput} onChange={handleFileChange} />
+    <>
+      <div className={styles.container}>
+        <input
+          type="file"
+          className={styles.fileInput}
+          onChange={handleFileChange}
+        />
         <div className={styles.thresholdsContainer}>
-        <div>
-            <label htmlFor="attackerThreshold" className={styles.label}>Attacker Threshold</label>
-            <label htmlFor="attackerThreshold" className={styles.label}>(Equipment Value {'>'})</label>
-            <input type="number" id="attackerThreshold" defaultValue="2000" className={styles.inputNumber} />
+          <div>
+            <label htmlFor="attackerThreshold" className={styles.label}>
+              Attacker Threshold
+            </label>
+            <label htmlFor="attackerThreshold" className={styles.label}>
+              (Equipment Value {">"})
+            </label>
+            <input
+              type="number"
+              id="attackerThreshold"
+              defaultValue="2000"
+              className={styles.inputNumber}
+            />
+          </div>
+          <div>
+            <label htmlFor="victimThreshold" className={styles.label}>
+              Victim Threshold
+            </label>
+            <label htmlFor="victimThreshold" className={styles.label}>
+              (Equipment Value {"<"})
+            </label>
+            <input
+              type="number"
+              id="victimThreshold"
+              defaultValue="2000"
+              className={styles.inputNumber}
+            />
+          </div>
         </div>
-        <div>
-            <label htmlFor="victimThreshold" className={styles.label}>Victim Threshold</label>
-            <label htmlFor="victimThreshold" className={styles.label}>(Equipment Value {'<'})</label>
-            <input type="number" id="victimThreshold" defaultValue="2000" className={styles.inputNumber} />
+        <Button
+          variant="primary"
+          disabled={isLoading}
+          onClick={!isLoading ? handleProcessFile : null}
+        >
+          {isLoading ? "Processing…" : "Start Processing"}
+        </Button>
+        <ProgressBar
+          animated
+          now={progress}
+          label={`${progress.toFixed(2)}%`}
+          className={styles.progressBar}
+        />
+        <div className={styles.messages}>
+          {messages.map((msg, index) => (
+            <div key={index} className={styles.messageItem}>
+              {msg}
+            </div>
+          ))}
+          <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
         </div>
-        </div>
-      <Button variant="primary" disabled={isLoading} onClick={!isLoading ? handleProcessFile : null}>
-        {isLoading ? 'Processing…' : 'Start Processing'}
-      </Button>
-      <ProgressBar animated now={progress} label={`${progress.toFixed(2)}%`} className={styles.progressBar}/>
-      <div className={styles.messages}>
-        {messages.map((msg, index) => (
-          <div key={index} className={styles.messageItem}>{msg}</div>
-        ))}
-        <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
+        {Object.keys(playerStats).length > 0 && (
+          <PlayerStatsTable playerStats={playerStats} />
+        )}
       </div>
-      {Object.keys(playerStats).length > 0 && <PlayerStatsTable playerStats={playerStats} />}
-    </div>
+    </>
   );
 }
 

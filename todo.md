@@ -1,0 +1,2 @@
+- [ ] Use Material UI to change number inputs (2000) to be a discrete slider
+- [ ] Track who got which eco's per round - track the location of the eco and the att/vic inventory

@@ -1,0 +1,105 @@
+.container {
+    min-width: 50%;
+    width: fit-content;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fileInput {
+    width: fit-content;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    display: block;
+}
+
+.thresholdsContainer {
+    display: flex;
+    justify-content: space-between;
+    /* Adjusts space between the child elements */
+    align-items: center;
+    /* Centers items vertically */
+    margin-bottom: 10px;
+    /* Space below the container */
+    text-align: center;
+}
+
+.thresholdsContainer>div {
+    flex: 1;
+    /* Flex grow to fill space equally */
+    padding: 0 10px;
+    /* Padding on left and right for spacing */
+}
+
+.thresholdsContainer>div:first-child {
+    padding-left: 0;
+    /* No padding on the left for the first item */
+}
+
+.thresholdsContainer>div:last-child {
+    padding-right: 0;
+    /* No padding on the right for the last item */
+}
+
+
+.label {
+    display: block;
+    margin-bottom: 5px;
+    /* Space below label */
+    color: #c9d1d9;
+    /* Adjust color for visibility */
+    font-size: 14px;
+    /* Adjust font size */
+}
+
+.inputNumber {
+    width: fit-content;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    display: block;
+    text-align: center;
+}
+
+.progressBar {
+    margin-top: 10px;
+    width: 75%;
+}
+
+.messages {
+    height: 200px;
+    overflow-y: auto;
+    margin-top: 20px;
+    padding: 10px;
+    background: #0d1117;
+    /* Dark background */
+    border: 1px solid #30363d;
+    /* Slightly lighter border for visibility */
+    border-radius: 4px;
+    color: #c9d1d9;
+    /* Light gray text color for visibility */
+    font-family: 'Courier New', Courier, monospace;
+    /* Monospaced font for that code-like feel */
+    text-align: center;
+    resize: both;
+    width: 80%;
+    margin-bottom: 20px;
+}
+
+.messageItem {
+    padding: 5px;
+    border-bottom: 1px solid #21262d;
+    /* Darker line separators for each message */
+}
+
+.messageItem:last-child {
+    border-bottom: none;
+}

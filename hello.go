@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -106,11 +107,29 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	}
 
 	// Send final player stats to JavaScript
-	result := "Final Player Stats:\n"
-	for player, stats := range playerStats {
-		result += fmt.Sprintf("%s: Kills=%d, EcoKills=%d, TotalValue=%d, AvgKillValue=%.2f\n", player, stats.Kills, stats.EcoKills, stats.TotalValue, stats.AverageKillValue())
+	// result := "Final Player Stats:\n"
+	// for player, stats := range playerStats {
+	// 	result += fmt.Sprintf("%s: Kills=%d, EcoKills=%d, TotalValue=%d, AvgKillValue=%.2f\n", player, stats.Kills, stats.EcoKills, stats.TotalValue, stats.AverageKillValue())
+	// }
+	// js.Global().Call("postMessage", result)
+
+	// Convert player stats to JSON
+	statsJSON, err := json.Marshal(playerStats)
+	if err != nil {
+		js.Global().Call("postMessage", "Error encoding message to JSON")
+		return
 	}
-	js.Global().Call("postMessage", result)
+	msg := map[string]interface{}{
+		"type": "PlayerStats",
+		"data": json.RawMessage(statsJSON),
+	}
+	msgJSON, err := json.Marshal(msg)
+	if err != nil {
+		js.Global().Call("postMessage", `{"type":"error","data":"Error encoding message to JSON"}`)
+		return
+	}
+	// Send JSON string to JavaScript
+	js.Global().Call("postMessage", string(msgJSON))
 }
 
 func main() {

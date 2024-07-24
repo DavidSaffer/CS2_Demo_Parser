@@ -20,6 +20,7 @@ import (
 type PlayerStats struct {
 	Kills         int
 	EcoKills      int // Count of eco frags
+	LightBuyKills int
 	TotalValue    int
 	Team          Team
 	EcoKillRounds []int
@@ -33,10 +34,11 @@ func (ps *PlayerStats) AverageKillValue() float64 {
 }
 
 type ProgressReader struct {
-	reader       io.Reader
-	totalSize    int64
-	bytesRead    int64
-	progressFunc func(progress float64)
+	reader          io.Reader
+	totalSize       int64
+	bytesRead       int64
+	lastReportedInt int
+	progressFunc    func(progress float64)
 }
 
 func (p *ProgressReader) Read(b []byte) (int, error) {
@@ -44,16 +46,23 @@ func (p *ProgressReader) Read(b []byte) (int, error) {
 	p.bytesRead += int64(n)
 	if p.totalSize > 0 {
 		progress := float64(p.bytesRead) / float64(p.totalSize) * 100
-		p.progressFunc(progress)
+		currentIntProgress := int(progress)
+
+		// Check if integer progress has changed
+		if currentIntProgress != p.lastReportedInt {
+			p.lastReportedInt = currentIntProgress
+			p.progressFunc(progress)
+		}
 	}
 	return n, err
 }
 
 func NewProgressReader(reader io.Reader, totalSize int64, progressFunc func(progress float64)) *ProgressReader {
 	return &ProgressReader{
-		reader:       reader,
-		totalSize:    totalSize,
-		progressFunc: progressFunc,
+		reader:          reader,
+		totalSize:       totalSize,
+		lastReportedInt: -1,
+		progressFunc:    progressFunc,
 	}
 }
 
@@ -73,8 +82,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	// Register an event handler to track round end
 	p.RegisterEventHandler(func(e events.RoundEnd) {
 		roundNum++
-		updateMessage := fmt.Sprintf("Round=%d", roundNum)
-		js.Global().Call("postMessage", updateMessage)
+		// updateMessage := fmt.Sprintf("Round=%d", roundNum)
+		// js.Global().Call("postMessage", updateMessage)
 	})
 
 	p.RegisterEventHandler(func(e events.Kill) {
@@ -88,21 +97,42 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		victimValue := e.Victim.EquipmentValueCurrent()
 
 		killerHasMoreThanPistol := false
+		killerHasRifle := false
+		killerPrimaryWeapon := e.Killer.Weapons()[0]
 		killerWeapons := e.Killer.Weapons()
 		for _, weapon := range killerWeapons {
 			weaponClass := (weapon.Type + 99) / 100
 			if weaponClass >= 2 && weaponClass <= 4 {
 				killerHasMoreThanPistol = true
-				break
+				killerPrimaryWeapon = weapon
+			}
+			if weaponClass == 3 {
+				if weapon.Type != 306 && weapon.Type != 305 { // Exclude scout
+					killerHasRifle = true
+				}
 			}
 		}
 		victimHasMoreThanPistol := false
+		victimHasBadGun := false
 		victimWeapons := e.Victim.Weapons()
+		victimPrimaryWeapon := e.Killer.Weapons()[0]
 		for _, weapon := range victimWeapons {
 			weaponClass := (weapon.Type + 99) / 100
 			if weaponClass >= 2 && weaponClass <= 4 {
 				victimHasMoreThanPistol = true
-				break
+				victimPrimaryWeapon = weapon
+			}
+			if !victimHasMoreThanPistol && weaponClass == 1 {
+				victimPrimaryWeapon = weapon
+			}
+			if weaponClass == 2 || weaponClass == 3 { // SMG, Heavy
+				victimHasBadGun = true
+			}
+			if weapon.Type == 306 || weapon.Type == 305 { // Include scout
+				victimHasBadGun = true
+			}
+			if weapon.Type == 106 { // Exclude P90
+				victimHasBadGun = false
 			}
 		}
 		killerWeapon := e.Killer.ActiveWeapon()
@@ -118,13 +148,13 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		// Initialize stats if the player is not already in the map
 		if _, ok := playerStats[killerName]; !ok {
 			playerStats[killerName] = &PlayerStats{
-				Team:          e.Killer.Team,
+				Team:          e.Killer.Team - 1,
 				EcoKillRounds: []int{},
 			}
 		}
 		if _, ok := playerStats[victimName]; !ok {
 			playerStats[victimName] = &PlayerStats{
-				Team:          e.Victim.Team,
+				Team:          e.Victim.Team - 1,
 				EcoKillRounds: []int{},
 			}
 		}
@@ -138,12 +168,14 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		if isEco {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
-			updateMessage := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Value :$ %d, Victim Value: $ %d", roundNum, killerName, killerValue, victimValue)
-			js.Global().Call("postMessage", updateMessage)
-			updateMessage2 := fmt.Sprintf("Eco Kill - Round: %d Killer HMTP: %t Victim HMTP: %t", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
-			js.Global().Call("postMessage", updateMessage2)
-			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer weapon: %s Victim weapon: %s\n", roundNum, killerWeapon, victimWeapon)
+			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Killer used: %s - against: %s armor: %d\n", roundNum, killerName, killerWeapon, victimWeapon, victimArmor)
 			js.Global().Call("postMessage", updateMessage3)
+		}
+		isLightBuyKill := (killerHasMoreThanPistol && !victimHasMoreThanPistol) || (killerHasRifle && victimHasBadGun)
+		if !isEco && isLightBuyKill {
+			playerStats[killerName].LightBuyKills++
+			updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used:$ %s, against: %s armor: %d", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
+			js.Global().Call("postMessage", updateMessage)
 		}
 	})
 

@@ -19,7 +19,13 @@ import BarChart from "../bar-graph/BarGraph";
 const PlayerStatsTable = ({ playerStats }) => {
   const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("EcoKills");
-  const columns = ["Player", "Kills", "EcoKills", "TotalValue", "AvgKillValue"];
+  const columns = [
+    { id: "Player", label: "Player" },
+    { id: "Kills", label: "Kills" },
+    { id: "EcoKills", label: "EcoKills" },
+    { id: "LightBuyKills", label: "Light Buy Kills" }, // Using the correct data key
+    { id: "AvgKillValue", label: "Avg Kill Value" }, // Making it human-readable
+  ];
   const [expanded, setExpanded] = useState({});
 
   const calculateAvgKillValue = (stats) => {
@@ -56,6 +62,7 @@ const PlayerStatsTable = ({ playerStats }) => {
     });
     return data;
   }, [playerStats]);
+  console.log("Team Bar Graph Data:", teamBarGraphData);
 
   const handleExpand = (teamId) => (event, isExpanded) => {
     setExpanded((prevExpanded) => ({
@@ -63,21 +70,22 @@ const PlayerStatsTable = ({ playerStats }) => {
       [teamId]: isExpanded ? !prevExpanded[teamId] : false,
     }));
   };
-  console.log("Team Bar Graph Data:", teamBarGraphData);
 
   const renderTeamTable = (teamPlayers, teamId) => {
     const sortedPlayerStats = teamPlayers.sort((a, b) => {
       const [playerA, statsA] = a;
       const [playerB, statsB] = b;
 
+      // Adjusting this to parse float only for AvgKillValue which is a string
       const valueA =
         orderBy === "AvgKillValue"
-          ? calculateAvgKillValue(statsA)
+          ? parseFloat(calculateAvgKillValue(statsA))
           : statsA[orderBy];
       const valueB =
         orderBy === "AvgKillValue"
-          ? calculateAvgKillValue(statsB)
+          ? parseFloat(calculateAvgKillValue(statsB))
           : statsB[orderBy];
+
       return order === "asc" ? valueA - valueB : valueB - valueA;
     });
 
@@ -96,13 +104,13 @@ const PlayerStatsTable = ({ playerStats }) => {
               <TableHead>
                 <TableRow>
                   {columns.map((column) => (
-                    <TableCell key={column}>
+                    <TableCell key={column.id}>
                       <TableSortLabel
-                        active={orderBy === column}
-                        direction={orderBy === column ? order : "asc"}
-                        onClick={(event) => handleRequestSort(event, column)}
+                        active={orderBy === column.id}
+                        direction={orderBy === column.id ? order : "asc"}
+                        onClick={(event) => handleRequestSort(event, column.id)}
                       >
-                        {column}
+                        {column.label}
                       </TableSortLabel>
                     </TableCell>
                   ))}
@@ -114,7 +122,8 @@ const PlayerStatsTable = ({ playerStats }) => {
                     <TableCell>{player}</TableCell>
                     <TableCell>{stats.Kills}</TableCell>
                     <TableCell>{stats.EcoKills}</TableCell>
-                    <TableCell>{stats.TotalValue}</TableCell>
+                    <TableCell>{stats.LightBuyKills}</TableCell>
+                    {/* New column for Light Buy Kills */}
                     <TableCell>{calculateAvgKillValue(stats)}</TableCell>
                   </TableRow>
                 ))}

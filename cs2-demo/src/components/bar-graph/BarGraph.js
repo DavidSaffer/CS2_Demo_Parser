@@ -25,8 +25,6 @@ const BarChart = ({ playerStats }) => {
 
     return roundNumberA - roundNumberB;
   });
-  console.log("data", data);
-  console.log("keys", Object.keys(playerStats));
 
   return (
     <div style={{ height: 400 }}>

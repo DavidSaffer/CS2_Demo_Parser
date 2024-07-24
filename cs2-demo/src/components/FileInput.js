@@ -30,6 +30,7 @@ function FileInput() {
             case "PlayerStats":
               setPlayerStats(json.data);
               setLoading(false); // Stop loading once the final message is received
+              setProgress(0);
               break;
             case "Error":
               console.error("Error from worker:", json.data);
@@ -93,6 +94,15 @@ function FileInput() {
     setMessages((prev) => [...prev, message]);
   };
 
+  const getMessageStyle = (message) => {
+    if (message.startsWith("Eco Kill")) {
+      return styles.messageEcoKill;
+    } else if (message.startsWith("Light Buy Kill")) {
+      return styles.messageLightBuyKill;
+    }
+    return ""; // Default style or leave as is if no prefix matches
+  };
+
   return (
     <>
       <div className={styles.container}>
@@ -100,6 +110,7 @@ function FileInput() {
           type="file"
           className={styles.fileInput}
           onChange={handleFileChange}
+          accept=".dem"
         />
         <div className={styles.thresholdsContainer}>
           <div>
@@ -141,12 +152,15 @@ function FileInput() {
         <ProgressBar
           animated
           now={progress}
-          label={`${progress.toFixed(2)}%`}
+          label={`${progress.toFixed(0)}%`}
           className={styles.progressBar}
         />
         <div className={styles.messages}>
           {messages.map((msg, index) => (
-            <div key={index} className={styles.messageItem}>
+            <div
+              key={index}
+              className={`${styles.messageItem} ${getMessageStyle(msg)}`}
+            >
               {msg}
             </div>
           ))}

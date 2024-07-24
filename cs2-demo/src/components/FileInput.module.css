@@ -21,7 +21,7 @@
 }
 
 .thresholdsContainer {
-    display: flex;
+    display: none;
     justify-content: space-between;
     /* Adjusts space between the child elements */
     align-items: center;
@@ -103,3 +103,11 @@
 .messageItem:last-child {
     border-bottom: none;
 }
+
+.messageEcoKill {
+    color: green;
+  }
+  
+  .messageLightBuyKill {
+    color: yellow;
+  }

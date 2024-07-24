@@ -135,8 +135,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
 			updateMessage := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Value :$ %d, Victim Value: $ %d", roundNum, killerName, killerValue, victimValue)
 			js.Global().Call("postMessage", updateMessage)
-			updateMessage = fmt.Sprintf("Eco Kill -Round: %d Killer HMTP: %t Victim HMTP: %t", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
-			js.Global().Call("postMessage", updateMessage)
+			updateMessage2 := fmt.Sprintf("Eco Kill -Round: %d Killer HMTP: %t Victim HMTP: %t", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
+			js.Global().Call("postMessage", updateMessage2)
 		}
 	})
 

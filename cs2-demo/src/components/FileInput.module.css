@@ -88,7 +88,7 @@
     /* Light gray text color for visibility */
     font-family: 'Courier New', Courier, monospace;
     /* Monospaced font for that code-like feel */
-    text-align: center;
+    text-align: left;
     resize: both;
     width: 80%;
     margin-bottom: 20px;

@@ -42,9 +42,6 @@ function FileInput() {
         }
       } else {
         appendMessage(message);
-        if (message.startsWith("Final Player Stats")) {
-          setLoading(false); // Stop loading once the final message is received
-        }
       }
     };
 

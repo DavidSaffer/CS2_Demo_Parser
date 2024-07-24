@@ -84,8 +84,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		killerName := e.Killer.Name
 		victimName := e.Victim.Name
-		killerValue := e.Killer.MoneySpentThisRound()
-		victimValue := e.Victim.MoneySpentThisRound()
+		killerValue := e.Killer.EquipmentValueCurrent()
+		victimValue := e.Victim.EquipmentValueCurrent()
 
 		killerHasMoreThanPistol := false
 		killerWeapons := e.Killer.Weapons()
@@ -96,7 +96,6 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				break
 			}
 		}
-
 		victimHasMoreThanPistol := false
 		victimWeapons := e.Victim.Weapons()
 		for _, weapon := range victimWeapons {
@@ -106,6 +105,11 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				break
 			}
 		}
+		killerWeapon := e.Killer.ActiveWeapon()
+		victimWeapon := e.Victim.ActiveWeapon()
+
+		killerArmor := e.Killer.Armor()
+		victimArmor := e.Victim.Armor()
 
 		if killerName == victimName {
 			return // Ignoring self-kills
@@ -130,13 +134,16 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		// Check if it's an eco kill
 		isEco := (killerValue > attackerThreshold) && (victimValue < victimThreshold) && ((killerValue - victimValue) > 500)
+		isEco = (killerHasMoreThanPistol && !victimHasMoreThanPistol) && (killerArmor > 0 && victimArmor == 0)
 		if isEco {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
 			updateMessage := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Value :$ %d, Victim Value: $ %d", roundNum, killerName, killerValue, victimValue)
 			js.Global().Call("postMessage", updateMessage)
-			updateMessage2 := fmt.Sprintf("Eco Kill -Round: %d Killer HMTP: %t Victim HMTP: %t", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
+			updateMessage2 := fmt.Sprintf("Eco Kill - Round: %d Killer HMTP: %t Victim HMTP: %t", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
 			js.Global().Call("postMessage", updateMessage2)
+			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer weapon: %s Victim weapon: %s\n", roundNum, killerWeapon, victimWeapon)
+			js.Global().Call("postMessage", updateMessage3)
 		}
 	})
 

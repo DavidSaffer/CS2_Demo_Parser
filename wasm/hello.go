@@ -84,8 +84,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		killerName := e.Killer.Name
 		victimName := e.Victim.Name
-		killerValue := e.Killer.EquipmentValueCurrent()
-		victimValue := e.Victim.EquipmentValueCurrent()
+		killerValue := e.Killer.MoneySpentThisRound()
+		victimValue := e.Victim.MoneySpentThisRound()
 
 		if killerName == victimName {
 			return // Ignoring self-kills

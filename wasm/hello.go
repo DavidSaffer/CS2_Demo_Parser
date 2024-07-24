@@ -15,7 +15,7 @@ import (
 
 // GOOS=js GOARCH=wasm go build -o main.wasm
 // GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o main.wasm
-// wasm-opt --enable-bulk-memory -Oz main.wasm -o main_opt.wasm
+// wasm-opt --enable-bulk-memory -Os main.wasm -o main_opt.wasm
 
 type PlayerStats struct {
 	Kills         int

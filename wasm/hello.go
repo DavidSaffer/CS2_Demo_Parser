@@ -87,6 +87,26 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		killerValue := e.Killer.MoneySpentThisRound()
 		victimValue := e.Victim.MoneySpentThisRound()
 
+		killerHasMoreThanPistol := false
+		killerWeapons := e.Killer.Weapons()
+		for _, weapon := range killerWeapons {
+			weaponClass := (weapon.Type + 99) / 100
+			if weaponClass >= 2 && weaponClass <= 4 {
+				killerHasMoreThanPistol = true
+				break
+			}
+		}
+
+		victimHasMoreThanPistol := false
+		victimWeapons := e.Victim.Weapons()
+		for _, weapon := range victimWeapons {
+			weaponClass := (weapon.Type + 99) / 100
+			if weaponClass >= 2 && weaponClass <= 4 {
+				victimHasMoreThanPistol = true
+				break
+			}
+		}
+
 		if killerName == victimName {
 			return // Ignoring self-kills
 		}
@@ -114,6 +134,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
 			updateMessage := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Value :$ %d, Victim Value: $ %d", roundNum, killerName, killerValue, victimValue)
+			js.Global().Call("postMessage", updateMessage)
+			updateMessage = fmt.Sprintf("Eco Kill -Round: %d Killer HMTP: %b Victim HMTP: %b", roundNum, killerHasMoreThanPistol, victimHasMoreThanPistol)
 			js.Global().Call("postMessage", updateMessage)
 		}
 	})

@@ -16,10 +16,10 @@ import (
 // GOOS=js GOARCH=wasm go build -o main.wasm
 
 type PlayerStats struct {
-	Kills      int
-	EcoKills   int // Count of eco frags
-	TotalValue int
-	Team 	 Team
+	Kills         int
+	EcoKills      int // Count of eco frags
+	TotalValue    int
+	Team          Team
 	EcoKillRounds []int
 }
 
@@ -92,13 +92,13 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		// Initialize stats if the player is not already in the map
 		if _, ok := playerStats[killerName]; !ok {
 			playerStats[killerName] = &PlayerStats{
-				Team: e.Killer.Team,
+				Team:          e.Killer.Team,
 				EcoKillRounds: []int{},
 			}
 		}
 		if _, ok := playerStats[victimName]; !ok {
 			playerStats[victimName] = &PlayerStats{
-				Team: e.Victim.Team,
+				Team:          e.Victim.Team,
 				EcoKillRounds: []int{},
 			}
 		}
@@ -134,8 +134,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		return
 	}
 	msg := map[string]interface{}{
-		"type": "PlayerStats",
-		"data": json.RawMessage(statsJSON),
+		"type":        "PlayerStats",
+		"data":        json.RawMessage(statsJSON),
 		"totalRounds": roundNum,
 	}
 	msgJSON, err := json.Marshal(msg)

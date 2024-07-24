@@ -1,17 +1,22 @@
-// This will remain mostly the same, but ensure paths to other assets like wasm_exec.js are correct
 importScripts('wasm_exec.js');  // Assuming wasm_exec.js is also in the public directory
+importScripts('https://cdnjs.cloudflare.com/ajax/libs/pako/1.0.11/pako.min.js');
 
 const go = new Go();
 
-fetch("main.wasm").then((response) =>
-  response.arrayBuffer()
-).then((bytes) =>
-  WebAssembly.instantiate(bytes, go.importObject)
-).then((result) => {
+fetch("main.wasm.gz").then((response) => {
+  if (!response.ok) {
+    throw new Error(`Failed to fetch WASM: ${response.statusText}`);
+  }
+  return response.arrayBuffer();
+}).then((compressedBytes) => {
+  // Decompress the gzipped content using a library like pako
+  const decompressedBytes = pako.ungzip(new Uint8Array(compressedBytes)).buffer;
+  return WebAssembly.instantiate(decompressedBytes, go.importObject);
+}).then((result) => {
   go.run(result.instance);
   postMessage("WebAssembly instantiated");
 }).catch((err) => {
-  postMessage("Failed to load WASM: " + err.message);
+  postMessage("Failed to load WASM: " + err);
 });
 
 onmessage = function (event) {

@@ -18,12 +18,13 @@ import (
 // wasm-opt --enable-bulk-memory -Os main.wasm -o main_opt.wasm
 
 type PlayerStats struct {
-	Kills         int
-	EcoKills      int // Count of eco frags
-	LightBuyKills int
-	TotalValue    int
-	Team          Team
-	EcoKillRounds []int
+	Kills              int
+	EcoKills           int // Count of eco frags
+	LightBuyKills      int
+	TotalValue         int
+	Team               Team
+	EcoKillRounds      []int
+	LightBuyKillRounds []int
 }
 
 func (ps *PlayerStats) AverageKillValue() float64 {
@@ -148,14 +149,16 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		// Initialize stats if the player is not already in the map
 		if _, ok := playerStats[killerName]; !ok {
 			playerStats[killerName] = &PlayerStats{
-				Team:          e.Killer.Team - 1,
-				EcoKillRounds: []int{},
+				Team:               e.Killer.Team - 1,
+				EcoKillRounds:      []int{},
+				LightBuyKillRounds: []int{},
 			}
 		}
 		if _, ok := playerStats[victimName]; !ok {
 			playerStats[victimName] = &PlayerStats{
-				Team:          e.Victim.Team - 1,
-				EcoKillRounds: []int{},
+				Team:               e.Victim.Team - 1,
+				EcoKillRounds:      []int{},
+				LightBuyKillRounds: []int{},
 			}
 		}
 
@@ -174,7 +177,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		isLightBuyKill := (killerHasMoreThanPistol && !victimHasMoreThanPistol) || (killerHasRifle && victimHasBadGun)
 		if !isEco && isLightBuyKill {
 			playerStats[killerName].LightBuyKills++
-			updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used:$ %s, against: %s armor: %d", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
+			playerStats[killerName].LightBuyKillRounds = append(playerStats[killerName].LightBuyKillRounds, roundNum)
+			updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used: %s, against: %s armor: %d", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
 			js.Global().Call("postMessage", updateMessage)
 		}
 	})

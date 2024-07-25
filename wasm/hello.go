@@ -93,6 +93,7 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		}
 
 		if len(e.Killer.Inventory) == 1 && len(e.Victim.Inventory) == 1 {
+			//TODO: knife round - needs to decrement number of rounds
 			return
 		}
 
@@ -175,14 +176,14 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		if isEco {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
-			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s Killer used: %s - against: %s armor: %d\n", roundNum, killerName, killerWeapon, victimWeapon, victimArmor)
+			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s used: %s - against: %s armor: %d\n", roundNum, killerName, killerWeapon, victimWeapon, victimArmor)
 			js.Global().Call("postMessage", updateMessage3)
 		}
 		isLightBuyKill := (killerHasMoreThanPistol && !victimHasMoreThanPistol) || (killerHasRifle && victimHasBadGun)
 		if !isEco && isLightBuyKill {
 			playerStats[killerName].LightBuyKills++
 			playerStats[killerName].LightBuyKillRounds = append(playerStats[killerName].LightBuyKillRounds, roundNum)
-			updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used: %s, against: %s armor: %d", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
+			updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used: %s - against: %s armor: %d", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
 			js.Global().Call("postMessage", updateMessage)
 		}
 	})

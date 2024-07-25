@@ -1,7 +1,7 @@
 :root {
   --background-color: #181a1b;
   --alt-background-color: #1b1e1f;
-  --text-color: #ffffff;
+  --text-color: #dadada;
   --border-color: #404854;
   --message-background-color: #0d1117;
   --message-eco-kill: green;
@@ -13,11 +13,11 @@
 :root.light-theme {
   --background-color: #ffffff;
   --alt-background-color: #e0e0e0;
-  --text-color: #333333;
+  --text-color: #1f1f1f;
   --border-color: #cccccc;
   --message-background-color: #afb1b4;
   --message-eco-kill: rgb(0, 102, 0);
-  --message-light-buy-kill: rgb(216, 216, 0);
+  --message-light-buy-kill: rgb(124, 124, 0);
   --shadow: rgba(0, 0, 0, 0.15);
 }
 

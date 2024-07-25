@@ -26,13 +26,14 @@ function App() {
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
+    document.documentElement.classList.toggle('light-theme')
   };
   // Determine which theme to use
   const currentTheme = theme === 'dark' ? darkTheme : lightTheme;
 
   return (
     <ThemeProvider theme={currentTheme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       <div className="App">
         <button onClick={toggleTheme}>Theme</button>
         <FileInput />

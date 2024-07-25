@@ -4,6 +4,7 @@ import Button from "react-bootstrap/Button";
 import styles from "./FileInput.module.css";
 import PlayerStatsTable from "./player-stats/PlayerStatsTable";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useTheme } from '@mui/material/styles';
 
 function FileInput() {
   const [messages, setMessages] = useState([]);
@@ -13,6 +14,8 @@ function FileInput() {
   const [playerStats, setPlayerStats] = useState({});
   const workerRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const theme = useTheme();
+  const darkMode = theme.palette.mode === 'dark';
 
   useEffect(() => {
     workerRef.current = new Worker(`${process.env.PUBLIC_URL}/worker.js`);
@@ -104,9 +107,17 @@ function FileInput() {
     return ""; // Default style or leave as is if no prefix matches
   };
 
+  const containerStyle = {
+    backgroundColor: darkMode ? '' : '#f0f0f0', // Adjust colors as needed
+  };
+
+  const messageStyle = {
+    background: darkMode ? '' : '#b8b6b6', // Adjust colors as needed
+  }
+
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles.container} style={containerStyle}>
         <input
           type="file"
           className={styles.fileInput}
@@ -156,11 +167,12 @@ function FileInput() {
           label={`${progress.toFixed(0)}%`}
           className={styles.progressBar}
         />
-        <div className={styles.messages}>
+        <div className={styles.messages} style={messageStyle}>
           {messages.map((msg, index) => (
             <div
               key={index}
               className={`${styles.messageItem} ${getMessageStyle(msg)}`}
+              style={messageStyle}
             >
               {msg}
             </div>

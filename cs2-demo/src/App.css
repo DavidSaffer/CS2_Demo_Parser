@@ -1,38 +1,42 @@
-.App {
-  text-align: center;
+:root {
+  --background-color: #181a1b;
+  --alt-background-color: #1b1e1f;
+  --text-color: #ffffff;
+  --border-color: #404854;
+  --message-background-color: #0d1117;
+  --message-eco-kill: green;
+  --message-light-buy-kill: yellow;
+  --shadow: rgba(255, 255, 255, 0.1);
+  /* Subtle white shadow for dark theme */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+:root.light-theme {
+  --background-color: #ffffff;
+  --alt-background-color: #e0e0e0;
+  --text-color: #333333;
+  --border-color: #cccccc;
+  --message-background-color: #afb1b4;
+  --message-eco-kill: rgb(0, 102, 0);
+  --message-light-buy-kill: rgb(216, 216, 0);
+  --shadow: rgba(0, 0, 0, 0.15);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+/* Ensure the root html and body tags take up full viewport height */
+html,
+body {
+  height: 100%;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  margin: 0;
+  padding: 0;
+  /* background-color: var(--background-color);
+  color: var(--text-color); */
+  overflow-x: hidden;
+  /* Prevents horizontal scrollbar */
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App {
+  margin-top: 10px;
+  text-align: center;
+  /* background-color: var(--background-color);
+  color: var(--text-color); */
 }

@@ -3,6 +3,7 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 import Button from "react-bootstrap/Button";
 import styles from "./FileInput.module.css";
 import PlayerStatsTable from "./player-stats/PlayerStatsTable";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function FileInput() {
   const [messages, setMessages] = useState([]);

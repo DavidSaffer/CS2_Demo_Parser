@@ -117,6 +117,9 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 					killerHasRifle = true
 				}
 			}
+			if weapon.Type == 106 { // Include P90
+				killerHasRifle = true
+			}
 		}
 		victimHasMoreThanPistol := false
 		victimHasBadGun := false

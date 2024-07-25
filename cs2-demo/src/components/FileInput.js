@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Button from "react-bootstrap/Button";
-import styles from "./FileInput.module.css";
+
 import PlayerStatsTable from "./player-stats/PlayerStatsTable";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useTheme } from '@mui/material/styles';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useTheme } from "@mui/material/styles";
+import styles from "./FileInput.module.css";
 
 function FileInput() {
   const [messages, setMessages] = useState([]);
@@ -15,7 +16,7 @@ function FileInput() {
   const workerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const theme = useTheme();
-  const darkMode = theme.palette.mode === 'dark';
+  const darkMode = theme.palette.mode === "dark";
 
   useEffect(() => {
     workerRef.current = new Worker(`${process.env.PUBLIC_URL}/worker.js`);
@@ -108,12 +109,12 @@ function FileInput() {
   };
 
   const containerStyle = {
-    backgroundColor: darkMode ? '' : '#f0f0f0', // Adjust colors as needed
+    backgroundColor: darkMode ? "" : "#f0f0f0", // Adjust colors as needed
   };
 
   const messageStyle = {
-    background: darkMode ? '' : '#b8b6b6', // Adjust colors as needed
-  }
+    background: darkMode ? "" : "#b8b6b6", // Adjust colors as needed
+  };
 
   return (
     <>

@@ -72,6 +72,7 @@
 .progressBar {
     margin-top: 10px;
     width: 75%;
+    background: var(--progress-bar-color);
 }
 
 .messages {

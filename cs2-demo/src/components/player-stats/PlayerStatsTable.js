@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import TeamBarChart from "../bar-graph/TeamBarChart";
+import styles from "./PlayerStatsTable.module.css";
 
 const PlayerStatsTable = ({ playerStats }) => {
   const [order, setOrder] = useState("desc");
@@ -24,6 +25,7 @@ const PlayerStatsTable = ({ playerStats }) => {
   const columns = [
     { id: "Player", label: "Player" },
     { id: "Kills", label: "Kills" },
+    { id: "RealKills", label: '"Real" Kills' },
     { id: "EcoKills", label: "EcoKills" },
     { id: "LightBuyKills", label: "Light Buy Kills" },
     { id: "AvgKillValue", label: "Avg Kill Value" },
@@ -33,9 +35,14 @@ const PlayerStatsTable = ({ playerStats }) => {
     return stats.Kills === 0 ? 0 : (stats.TotalValue / stats.Kills).toFixed(2);
   };
 
+  const calculateRealKills = (stats) => {
+    return stats.Kills - stats.EcoKills - stats.LightBuyKills;
+  };
+
   const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
+    const isNewColumn = orderBy !== property;
+    // If it's a new column, start with descending, otherwise toggle the current order
+    setOrder(isNewColumn ? "desc" : order === "asc" ? "desc" : "asc");
     setOrderBy(property);
   };
 
@@ -79,14 +86,16 @@ const PlayerStatsTable = ({ playerStats }) => {
       const [playerA, statsA] = a;
       const [playerB, statsB] = b;
 
-      const valueA =
-        orderBy === "AvgKillValue"
-          ? parseFloat(calculateAvgKillValue(statsA))
-          : statsA[orderBy];
-      const valueB =
-        orderBy === "AvgKillValue"
-          ? parseFloat(calculateAvgKillValue(statsB))
-          : statsB[orderBy];
+      let valueA = statsA[orderBy]; // Default to direct attribute
+      let valueB = statsB[orderBy];
+
+      if (orderBy === "AvgKillValue") {
+        valueA = parseFloat(calculateAvgKillValue(statsA));
+        valueB = parseFloat(calculateAvgKillValue(statsB));
+      } else if (orderBy === "RealKills") {
+        valueA = calculateRealKills(statsA);
+        valueB = calculateRealKills(statsB);
+      }
 
       return order === "asc" ? valueA - valueB : valueB - valueA;
     });
@@ -96,6 +105,7 @@ const PlayerStatsTable = ({ playerStats }) => {
         expanded={expanded[teamId] || false}
         onChange={handleExpand(teamId)}
         key={teamId}
+        className={styles.Accordion}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6">Team {teamId}</Typography>
@@ -121,11 +131,24 @@ const PlayerStatsTable = ({ playerStats }) => {
               <TableBody>
                 {sortedPlayerStats.map(([player, stats]) => (
                   <TableRow key={player}>
-                    <TableCell>{player}</TableCell>
-                    <TableCell>{stats.Kills}</TableCell>
-                    <TableCell>{stats.EcoKills}</TableCell>
-                    <TableCell>{stats.LightBuyKills}</TableCell>
-                    <TableCell>{calculateAvgKillValue(stats)}</TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {player}
+                    </TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {stats.Kills}
+                    </TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {calculateRealKills(stats)}
+                    </TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {stats.EcoKills}
+                    </TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {stats.LightBuyKills}
+                    </TableCell>
+                    <TableCell style={{ textAlign: "center" }}>
+                      {calculateAvgKillValue(stats)}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

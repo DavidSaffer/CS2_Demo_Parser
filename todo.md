@@ -1,9 +1,14 @@
-- [ ] Use Material UI to change number inputs (2000) to be a discrete slider
-- [ ] Track who got which eco's per round - track the location of the eco and the att/vic inventory
+
+
+## General 
+- [ ] Refactor components
+- [ ] Add tutorial for downloading a demo
+- [ ] Allow users to also upload compressed demo's then unzip them in the browser 
+- [ ] Host on GithubPages with CI/CD Script that pulls changes from my personal repo 
+
+
+## Heat Map
+- [ ] Experiment with heatmaps in seperate project first
+- [ ] Track location of each kill + weapons used
 - [ ] 
 
-
-```
-if I have more than a pistol, and kill only a pistol no armor - ECO frag
-if I have a rifle, and kill an smg - light buy kill
-```

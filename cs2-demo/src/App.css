@@ -8,6 +8,7 @@
   --message-light-buy-kill: yellow;
   --shadow: rgba(255, 255, 255, 0.1);
   /* Subtle white shadow for dark theme */
+  --progress-bar-color: #21262d;
 }
 
 :root.light-theme {
@@ -19,6 +20,7 @@
   --message-eco-kill: rgb(0, 102, 0);
   --message-light-buy-kill: rgb(124, 124, 0);
   --shadow: rgba(0, 0, 0, 0.15);
+  --progress-bar-color: #cdcdcd;
 }
 
 /* Ensure the root html and body tags take up full viewport height */
@@ -39,4 +41,22 @@ body {
   text-align: center;
   /* background-color: var(--background-color);
   color: var(--text-color); */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px; /* Adjust based on your spacing needs */
+  color: white;
+}
+
+.nav-menu {
+  cursor: pointer;
+  /* additional styling for your menu icon */
+}
+
+.settings {
+  cursor: pointer;
+  /* additional styling for your settings icon */
 }

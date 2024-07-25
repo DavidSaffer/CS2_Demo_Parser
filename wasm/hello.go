@@ -92,6 +92,10 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 			return
 		}
 
+		if len(e.Killer.Inventory) == 1 && len(e.Victim.Inventory) == 1 {
+			return
+		}
+
 		killerName := e.Killer.Name
 		victimName := e.Victim.Name
 		killerValue := e.Killer.EquipmentValueCurrent()

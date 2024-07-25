@@ -14,19 +14,20 @@ import {
   AccordionDetails,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import BarChart from "../bar-graph/BarGraph";
+import TeamBarChart from "../bar-graph/TeamBarChart";
 
 const PlayerStatsTable = ({ playerStats }) => {
   const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("EcoKills");
+  const [expanded, setExpanded] = useState({});
+
   const columns = [
     { id: "Player", label: "Player" },
     { id: "Kills", label: "Kills" },
     { id: "EcoKills", label: "EcoKills" },
-    { id: "LightBuyKills", label: "Light Buy Kills" }, // Using the correct data key
-    { id: "AvgKillValue", label: "Avg Kill Value" }, // Making it human-readable
+    { id: "LightBuyKills", label: "Light Buy Kills" },
+    { id: "AvgKillValue", label: "Avg Kill Value" },
   ];
-  const [expanded, setExpanded] = useState({});
 
   const calculateAvgKillValue = (stats) => {
     return stats.Kills === 0 ? 0 : (stats.TotalValue / stats.Kills).toFixed(2);
@@ -53,16 +54,18 @@ const PlayerStatsTable = ({ playerStats }) => {
   const teamBarGraphData = useMemo(() => {
     const data = {};
     Object.entries(playerStats).forEach(([player, stats]) => {
-      if (stats.Team && stats.EcoKillRounds) {
+      if (stats.Team) {
         if (!data[stats.Team]) {
           data[stats.Team] = {};
         }
-        data[stats.Team][player] = stats.EcoKillRounds;
+        data[stats.Team][player] = {
+          ecos: stats.EcoKillRounds,
+          lightBuys: stats.LightBuyKillRounds,
+        };
       }
     });
     return data;
   }, [playerStats]);
-  console.log("Team Bar Graph Data:", teamBarGraphData);
 
   const handleExpand = (teamId) => (event, isExpanded) => {
     setExpanded((prevExpanded) => ({
@@ -76,7 +79,6 @@ const PlayerStatsTable = ({ playerStats }) => {
       const [playerA, statsA] = a;
       const [playerB, statsB] = b;
 
-      // Adjusting this to parse float only for AvgKillValue which is a string
       const valueA =
         orderBy === "AvgKillValue"
           ? parseFloat(calculateAvgKillValue(statsA))
@@ -123,14 +125,13 @@ const PlayerStatsTable = ({ playerStats }) => {
                     <TableCell>{stats.Kills}</TableCell>
                     <TableCell>{stats.EcoKills}</TableCell>
                     <TableCell>{stats.LightBuyKills}</TableCell>
-                    {/* New column for Light Buy Kills */}
                     <TableCell>{calculateAvgKillValue(stats)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </TableContainer>
-          <BarChart playerStats={teamBarGraphData[teamId]} />
+          <TeamBarChart teamId={teamId} teamData={teamBarGraphData[teamId]} />
         </AccordionDetails>
       </Accordion>
     );

@@ -2,12 +2,13 @@ import React from "react";
 import { ResponsiveBar } from "@nivo/bar";
 
 const BarChart = ({ playerStats }) => {
+  console.log("playerStats", playerStats)
   // Prepare data for the chart
   const data = [];
 
   // First, aggregate data: count rounds for each player
   Object.entries(playerStats).forEach(([player, rounds]) => {
-    rounds.forEach((round) => {
+    rounds.ecos.forEach((round) => {
       const roundLabel = `Round ${round}`;
       let roundData = data.find((d) => d.round === roundLabel);
       if (!roundData) {

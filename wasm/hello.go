@@ -144,8 +144,6 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				victimHasBadGun = false
 			}
 		}
-		killerWeapon := e.Killer.ActiveWeapon()
-		victimWeapon := e.Victim.ActiveWeapon()
 
 		killerArmor := e.Killer.Armor()
 		victimArmor := e.Victim.Armor()
@@ -179,7 +177,7 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		if isEco {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number
-			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s used: %s - against: %s armor: %d\n", roundNum, killerName, killerWeapon, victimWeapon, victimArmor)
+			updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s used: %s - against: %s armor: %d\n", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon, victimArmor)
 			js.Global().Call("postMessage", updateMessage3)
 		}
 		isLightBuyKill := (killerHasMoreThanPistol && !victimHasMoreThanPistol) || (killerHasRifle && victimHasBadGun)

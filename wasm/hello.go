@@ -104,6 +104,9 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		killerHasMoreThanPistol := false
 		killerHasRifle := false
+		if len(e.Killer.Weapons()) == 0 {
+			return
+		}
 		killerPrimaryWeapon := e.Killer.Weapons()[0]
 		killerWeapons := e.Killer.Weapons()
 		for _, weapon := range killerWeapons {
@@ -121,9 +124,15 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				killerHasRifle = true
 			}
 		}
+		if len(e.Killer.Weapons()) == 0 {
+			return
+		}
 		victimHasMoreThanPistol := false
 		victimHasBadGun := false
 		victimWeapons := e.Victim.Weapons()
+		if len(victimWeapons) == 0 {
+			return
+		}
 		victimPrimaryWeapon := e.Killer.Weapons()[0]
 		for _, weapon := range victimWeapons {
 			weaponClass := (weapon.Type + 99) / 100
@@ -171,9 +180,13 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 		playerStats[killerName].Kills++
 		playerStats[killerName].TotalValue += victimValue
 
+		// isHero := (!killerHasMoreThanPistol && !victimHasBadGun)
+		// if isHero {
+		// 	updateMessageHero := fmt.Sprintf("Hero Kill - Round: %d Killer: %s used: %s - against: %s \n", roundNum, killerName, killerPrimaryWeapon, victimPrimaryWeapon)
+		// 	js.Global().Call("postMessage", updateMessageHero)
+		// }
 		// Check if it's an eco kill
-		isEco := (killerValue > attackerThreshold) && (victimValue < victimThreshold) && ((killerValue - victimValue) > 500)
-		isEco = (killerHasMoreThanPistol && !victimHasMoreThanPistol) && (killerArmor > 0 && victimArmor == 0)
+		isEco := (killerHasMoreThanPistol && !victimHasMoreThanPistol) && (killerArmor > 0 && victimArmor == 0)
 		if isEco {
 			playerStats[killerName].EcoKills++
 			playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, roundNum) // Record the round number

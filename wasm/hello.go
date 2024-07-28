@@ -99,7 +99,6 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 
 		killerName := e.Killer.Name
 		victimName := e.Victim.Name
-		killerValue := e.Killer.EquipmentValueCurrent()
 		victimValue := e.Victim.EquipmentValueCurrent()
 
 		killerHasMoreThanPistol := false
@@ -115,8 +114,8 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				killerHasMoreThanPistol = true
 				killerPrimaryWeapon = weapon
 			}
-			if weaponClass == 3 {
-				if weapon.Type != 306 && weapon.Type != 305 { // Exclude scout
+			if weaponClass == 4 {
+				if weapon.Type != 306 { // Exclude scout
 					killerHasRifle = true
 				}
 			}
@@ -124,16 +123,14 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 				killerHasRifle = true
 			}
 		}
-		if len(e.Killer.Weapons()) == 0 {
-			return
-		}
+
 		victimHasMoreThanPistol := false
 		victimHasBadGun := false
 		victimWeapons := e.Victim.Weapons()
 		if len(victimWeapons) == 0 {
 			return
 		}
-		victimPrimaryWeapon := e.Killer.Weapons()[0]
+		victimPrimaryWeapon := e.Victim.Weapons()[0]
 		for _, weapon := range victimWeapons {
 			weaponClass := (weapon.Type + 99) / 100
 			if weaponClass >= 2 && weaponClass <= 4 {
@@ -146,7 +143,7 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 			if weaponClass == 2 || weaponClass == 3 { // SMG, Heavy
 				victimHasBadGun = true
 			}
-			if weapon.Type == 306 || weapon.Type == 305 { // Include scout
+			if weapon.Type == 306 { // Include scout
 				victimHasBadGun = true
 			}
 			if weapon.Type == 106 { // Exclude P90

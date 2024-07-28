@@ -2,7 +2,10 @@ module GopherTest
 
 go 1.22.5
 
-require github.com/markus-wa/demoinfocs-golang/v4 v4.2.3
+require (
+	github.com/json-iterator/go v1.1.12
+	github.com/markus-wa/demoinfocs-golang/v4 v4.2.3
+)
 
 require (
 	github.com/golang/geo v0.0.0-20230421003525-6adc56603217 // indirect
@@ -12,6 +15,8 @@ require (
 	github.com/markus-wa/godispatch v1.4.1 // indirect
 	github.com/markus-wa/ice-cipher-go v0.0.0-20230901094113-348096939ba7 // indirect
 	github.com/markus-wa/quickhull-go/v2 v2.2.0 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect

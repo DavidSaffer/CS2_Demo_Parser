@@ -5,11 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"syscall/js"
-
-	jsoniter "github.com/json-iterator/go"
 )
-
-var fastJson = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // sendProgressUpdate sends a status message to the JavaScript side using WebAssembly's syscall/js package.
 func sendProgressUpdate(message string) {
@@ -22,7 +18,7 @@ func sendError(errorMessage string) {
 		"type": "error",
 		"data": errorMessage,
 	}
-	errorJSON, err := fastJson.Marshal(errorMsg)
+	errorJSON, err := json.Marshal(errorMsg)
 	if err != nil {
 		// Fallback if JSON marshaling fails
 		js.Global().Call("postMessage", `{"type":"error","data":"Failed to encode error message"}`)
@@ -33,7 +29,7 @@ func sendError(errorMessage string) {
 
 // sendFinalStats serializes the final statistics to JSON and sends it to JavaScript.
 func sendFinalStats(playerStats map[string]*PlayerStats, roundNum int) {
-	statsJSON, err := fastJson.Marshal(playerStats)
+	statsJSON, err := json.Marshal(playerStats)
 	if err != nil {
 		sendError("Error encoding player stats to JSON")
 		return

@@ -7,8 +7,8 @@ cd "$(dirname "$0")/src"
 export GOOS=js
 export GOARCH=wasm
 
-# Build the WebAssembly binary with optimizations for hello.go
-go build -ldflags="-s -w" -o ../static/main.wasm hello.go
+# Build the WebAssembly binary with optimizations
+go build -ldflags="-s -w" -o ../static/main.wasm main.go analysis.go utils.go
 
 # Navigate to the static directory to handle wasm files
 cd ../static

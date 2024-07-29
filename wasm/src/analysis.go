@@ -31,7 +31,18 @@ type PlayerStats struct {
 func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	js.Global().Call("postMessage", "Starting parse...")
 
+	if len(data) == 0 {
+		js.Global().Call("postMessage", "AnalyzeDemo: received empty demo data")
+		log.Fatal("AnalyzeDemo: received empty demo data")
+	}
+
 	reader := bytes.NewReader(data)
+
+	if reader == nil {
+		js.Global().Call("postMessage", "Error: reader is nil")
+		return
+	}
+
 	progressReader := NewProgressReader(reader, int64(len(data)), func(progress float64) {
 		js.Global().Call("postMessage", fmt.Sprintf("Progress: %.0f%%", progress))
 	})
@@ -41,9 +52,10 @@ func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
 	playerStats := make(map[string]*PlayerStats)
 	roundNum := 1
 
-	RegisterEventHandlers(p, playerStats, &roundNum)
+	RegisterEventHandlers(p, playerStats, &roundNum) // <- Logic is in here
 
-	if err := p.ParseToEnd(); err != nil {
+	if err := p.ParseToEnd(); err != nil { // <- Run the parse here
+		js.Global().Call("postMessage", fmt.Sprintf("Failed to parse demo: %s", err.Error()))
 		log.Panic("failed to parse demo: ", err)
 	}
 
@@ -60,6 +72,7 @@ func RegisterEventHandlers(p dem.Parser, playerStats map[string]*PlayerStats, ro
 	p.RegisterEventHandler(func(e events.Kill) {
 		HandleKillEvent(e, playerStats, roundNum)
 	})
+
 }
 
 func HandleRoundEnd(roundNum *int) {
@@ -133,6 +146,9 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 
 }
 
+// Get the "best" weapon in their inventory.
+// If they have a primary, its the primary.
+// If no primary, itll be their 2ndary - then knife.
 func getPrimaryWeapon(weapons []*common.Equipment) common.Equipment {
 	if len(weapons) == 0 {
 		return common.Equipment{}
@@ -151,6 +167,7 @@ func getPrimaryWeapon(weapons []*common.Equipment) common.Equipment {
 	return primaryWeapon
 }
 
+// Calculate wether killer has more than a pistol, and if the killer has a rifle
 func getKillerWeaponInfo(killerPrimaryWeapon common.Equipment) (hasMoreThanPistol, hasRifle bool) {
 	weaponClass := (killerPrimaryWeapon.Type + 99) / 100
 	if weaponClass >= 2 && weaponClass <= 4 {
@@ -167,6 +184,7 @@ func getKillerWeaponInfo(killerPrimaryWeapon common.Equipment) (hasMoreThanPisto
 	return
 }
 
+// Calculate if the victim has more than a pistol, and if they had a "bad gun (non rifle)"
 func getVictimWeaponInfo(killerPrimaryWeapon common.Equipment) (hasMoreThanPistol, hasBadGun bool) {
 	weaponClass := (killerPrimaryWeapon.Type + 99) / 100
 	if weaponClass >= 2 && weaponClass <= 4 { // SMG, Heavy, Rifle

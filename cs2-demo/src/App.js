@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import FileInput from "./components/FileInput";
 import DemoResultsContainer from "./components/demo-results-container/demoResultsContainer";
 import { fetchAnalysisResults } from "./utils/demoStorageUtil";
+import SummaryResults from "./components/summary-results/SummaryResults";
 import "./App.css";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -14,6 +15,11 @@ import MenuItem from "@mui/material/MenuItem";
 import Switch from "@mui/material/Switch";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
+
+import DeleteIcon from '@mui/icons-material/Delete';
+import ListItemIcon from '@mui/material/ListItemIcon';
+
+import {STORAGE_KEY} from './utils/demoStorageUtil'
 
 const lightTheme = createTheme({
   palette: {
@@ -45,6 +51,7 @@ function App() {
   const [settingsMenuAnchorEl, setSettingsMenuAnchorEl] = useState(null);
   const [demos, setDemos] = useState([]);
   const [selectedDemo, setSelectedDemo] = useState(null);
+  const [showSummaryResults, setShowSummaryResults] = useState(false);
 
   useEffect(() => {
     setDemos(fetchAnalysisResults());
@@ -70,11 +77,23 @@ function App() {
     console.log(demo);
     setSelectedDemo(demo);
     closeAppMenu();
+    setShowSummaryResults(false);
   };
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
     document.documentElement.classList.toggle("light-theme");
+  };
+
+  const handleDeleteDemo = (event, demoName) => {
+    event.stopPropagation(); // Prevent triggering the click event of the menu item
+    const updatedDemos = demos.filter(demo => demo.demoName !== demoName);
+    setDemos(updatedDemos);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedDemos));
+    // Optionally, you might want to update or clear the player stats if needed
+    if (selectedDemo && selectedDemo.demoName === demoName) {
+      setSelectedDemo(null); // Clear selection if the deleted demo was selected
+    }
   };
 
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
@@ -92,9 +111,13 @@ function App() {
           open={Boolean(appMenuAnchorEl)}
           onClose={closeAppMenu}
         >
+          <MenuItem onClick={() => { setSelectedDemo(null); closeAppMenu(); setShowSummaryResults(true); }}>Summary Results</MenuItem>
           {demos.map((demo, index) => (
             <MenuItem key={index} onClick={() => handleDemoClick(demo)}>
               {demo.demoName}
+              <ListItemIcon onClick={(e) => handleDeleteDemo(e, demo.demoName)}>
+                <DeleteIcon />
+              </ListItemIcon>
             </MenuItem>
           ))}
         </Menu>
@@ -126,6 +149,9 @@ function App() {
             demoName={selectedDemo.demoName}
             demoResults={selectedDemo.result}
           />
+        )}
+        {showSummaryResults && (
+          <SummaryResults />
         )}
       </div>
     </ThemeProvider>

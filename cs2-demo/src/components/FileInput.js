@@ -16,8 +16,9 @@ function FileInput() {
   const [isLoading, setLoading] = useState(false); // Manage loading state for the button
   const [playerStats, setPlayerStats] = useState({});
   const [decompressing, setDecompressing] = useState(false);
-  const fileRef = useRef(null); // Use useRef here
+  const fileRef = useRef(null); // Use useRef here so the file can be accessed from a worker
   const workerRef = useRef(null);
+  const decompressionWorkerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const theme = useTheme();
   const darkMode = theme.palette.mode === "dark";
@@ -70,8 +71,24 @@ function FileInput() {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    decompressionWorkerRef.current =  new Worker(`${process.env.PUBLIC_URL}/decompressionWorker.js`);
+    decompressionWorkerRef.current.addEventListener('message', (event) => {
+      const { success, data, error } = event.data;
+      if (success) {
+        console.log('Decompressed data:', data);
+        // Now you might pass this data to the original worker or handle it directly in the UI
+      } else {
+        console.error('Decompression failed', error)
+      }
+    })
+    return () => {
+      decompressionWorkerRef.current.terminate();
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // }, [messages]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -100,6 +117,7 @@ function FileInput() {
             type: "application/octet-stream",
           });
           appendMessage("File loaded and decompressed.");
+          setDecompressing(false);
         } catch (error) {
           console.error("Error decompressing the file:", error);
           appendMessage("Error decompressing the file.");
@@ -111,6 +129,7 @@ function FileInput() {
     } else if (fileName.endsWith(".dem")) {
       fileRef.current = file; // Set the file in the ref if it's a .dem file
     } else {
+      fileRef.current = null;
       appendMessage(
         "Unsupported file type. Please upload a '.dem' or '.dem.gz' file."
       );
@@ -156,13 +175,12 @@ function FileInput() {
 
   return (
     <>
-      {/* <Modal show={decompressing} onHide={() => setDecompressing(false)}>
-        <Modal.Header>
-          <Modal.Title>Processing File</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Decompressing the file, please wait...</Modal.Body>
-        <ProgressBar animated now={100} />
-      </Modal> */}
+      <Modal show={decompressing}>
+      <Modal.Header>
+          <Modal.Title style={{ color: '#ff0000' }}>Processing File</Modal.Title>  {/* Red text */}
+      </Modal.Header>
+      <Modal.Body style={{ color: '#00ff00' }}>Decompressing the file, please wait...</Modal.Body>  {/* Green text */}
+    </Modal>
       <div className={styles.container} style={containerStyle}>
         <input
           type="file"

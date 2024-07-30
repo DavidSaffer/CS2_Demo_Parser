@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -15,9 +16,7 @@ func main() {
 		go func() {
 			data := make([]byte, args[0].Get("byteLength").Int())
 			js.CopyBytesToGo(data, args[0])
-			attackerThreshold := args[1].Int()
-			victimThreshold := args[2].Int()
-			AnalyzeDemo(data, attackerThreshold, victimThreshold)
+			AnalyzeDemo(data)
 		}()
 		return nil
 	}))

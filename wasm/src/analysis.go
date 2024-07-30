@@ -28,7 +28,7 @@ type PlayerStats struct {
 	LightBuyKillRounds []int
 }
 
-func AnalyzeDemo(data []byte, attackerThreshold, victimThreshold int) {
+func AnalyzeDemo(data []byte) {
 	js.Global().Call("postMessage", "Starting parse...")
 
 	if len(data) == 0 {

@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Button from "react-bootstrap/Button";
+import {
+  saveAnalysisResult,
+  fetchAnalysisResults,
+} from "../utils/demoStorageUtil";
 
 import PlayerStatsTable from "./player-stats/PlayerStatsTable";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -9,10 +13,10 @@ import styles from "./FileInput.module.css";
 
 function FileInput() {
   const [messages, setMessages] = useState([]);
-  const [file, setFile] = useState(null); // Holds the selected file
   const [progress, setProgress] = useState(0);
   const [isLoading, setLoading] = useState(false); // Manage loading state for the button
   const [playerStats, setPlayerStats] = useState({});
+  const fileRef = useRef(null); // Use useRef here
   const workerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const theme = useTheme();
@@ -34,6 +38,15 @@ function FileInput() {
           switch (json.type) {
             case "PlayerStats":
               setPlayerStats(json.data);
+              // Assuming the JSON has been parsed and you need `file.name` hereafter
+              if (fileRef.current) {
+                // Access the current file from the ref
+                saveAnalysisResult(fileRef.current.name, json.data);
+              } else {
+                console.error(
+                  "File is null when trying to save the analysis result."
+                );
+              }
               setLoading(false); // Stop loading once the final message is received
               setProgress(0);
               break;
@@ -61,38 +74,25 @@ function FileInput() {
   }, [messages]);
 
   const handleFileChange = (event) => {
-    setFile(event.target.files[0]); // Just store the file
-    setMessages([]); // Clear messages upon new file selection
-    setProgress(0); // Reset progress
+    fileRef.current = event.target.files[0]; // Set the file in the ref
+    setMessages([]);
+    setProgress(0);
   };
 
   const handleProcessFile = () => {
     setPlayerStats({});
-    if (!file) {
+    if (!fileRef.current) {
       appendMessage("No file selected.");
       return;
     }
-    setLoading(true); // Start loading
-    const attackerThreshold = parseInt(
-      document.getElementById("attackerThreshold").value,
-      10
-    );
-    const victimThreshold = parseInt(
-      document.getElementById("victimThreshold").value,
-      10
-    );
-
+    setLoading(true);
     const reader = new FileReader();
     reader.onload = () => {
       const arrayBuffer = reader.result;
       const uint8Array = new Uint8Array(arrayBuffer);
-      workerRef.current.postMessage({
-        data: uint8Array,
-        attackerThreshold: attackerThreshold,
-        victimThreshold: victimThreshold,
-      });
+      workerRef.current.postMessage({ data: uint8Array });
     };
-    reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(fileRef.current);
   };
 
   const appendMessage = (message) => {
@@ -125,36 +125,6 @@ function FileInput() {
           onChange={handleFileChange}
           accept=".dem"
         />
-        <div className={styles.thresholdsContainer}>
-          <div>
-            <label htmlFor="attackerThreshold" className={styles.label}>
-              Attacker Threshold
-            </label>
-            <label htmlFor="attackerThreshold" className={styles.label}>
-              (Equipment Value {">"})
-            </label>
-            <input
-              type="number"
-              id="attackerThreshold"
-              defaultValue="2000"
-              className={styles.inputNumber}
-            />
-          </div>
-          <div>
-            <label htmlFor="victimThreshold" className={styles.label}>
-              Victim Threshold
-            </label>
-            <label htmlFor="victimThreshold" className={styles.label}>
-              (Equipment Value {"<"})
-            </label>
-            <input
-              type="number"
-              id="victimThreshold"
-              defaultValue="2000"
-              className={styles.inputNumber}
-            />
-          </div>
-        </div>
         <Button
           variant="primary"
           disabled={isLoading}

@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FileInput from "./components/FileInput";
+import DemoResultsContainer from "./components/demo-results-container/demoResultsContainer";
+import { fetchAnalysisResults } from "./utils/demoStorageUtil";
 import "./App.css";
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -13,70 +15,99 @@ import Switch from "@mui/material/Switch";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
-// Define light theme
 const lightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#000", // Black for light mode
+      main: "#000",
     },
     secondary: {
-      main: "#555", // Darker gray for light mode
+      main: "#555",
     },
   },
 });
 
-// Define dark theme
 const darkTheme = createTheme({
   palette: {
     mode: "dark",
     primary: {
-      main: "#fff", // White for dark mode
+      main: "#fff",
     },
     secondary: {
-      main: "#bbb", // Lighter gray for dark mode
+      main: "#bbb",
     },
   },
 });
-//    ../wasm/./build-wasm.sh
 
 function App() {
-  const [theme, setTheme] = useState("dark"); // Default theme set to 'dark'
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [theme, setTheme] = useState("dark");
+  const [appMenuAnchorEl, setAppMenuAnchorEl] = useState(null);
+  const [settingsMenuAnchorEl, setSettingsMenuAnchorEl] = useState(null);
+  const [demos, setDemos] = useState([]);
+  const [selectedDemo, setSelectedDemo] = useState(null);
 
-  const handleMenu = (event) => {
-    setAnchorEl(event.currentTarget);
+  useEffect(() => {
+    setDemos(fetchAnalysisResults());
+  }, []);
+
+  const handleAppMenu = (event) => {
+    setAppMenuAnchorEl(event.currentTarget);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleSettingsMenu = (event) => {
+    setSettingsMenuAnchorEl(event.currentTarget);
+  };
+
+  const closeAppMenu = () => {
+    setAppMenuAnchorEl(null);
+  };
+
+  const closeSettingsMenu = () => {
+    setSettingsMenuAnchorEl(null);
+  };
+
+  const handleDemoClick = (demo) => {
+    console.log(demo);
+    setSelectedDemo(demo);
+    closeAppMenu();
   };
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "dark" ? "light" : "dark"));
     document.documentElement.classList.toggle("light-theme");
   };
-  // Determine which theme to use
+
   const currentTheme = theme === "dark" ? darkTheme : lightTheme;
 
   return (
     <ThemeProvider theme={currentTheme}>
-      <CssBaseline enableColorScheme />
+      <CssBaseline enableColorScheme={true} />
       <div className="header">
-        <IconButton className="nav-menu" color="inherit">
+        <IconButton color="inherit" onClick={handleAppMenu}>
           <MenuIcon color="primary" />
         </IconButton>
-        <IconButton className="settings" color="inherit" onClick={handleMenu}>
+        <Menu
+          id="app-menu"
+          anchorEl={appMenuAnchorEl}
+          open={Boolean(appMenuAnchorEl)}
+          onClose={closeAppMenu}
+        >
+          {demos.map((demo, index) => (
+            <MenuItem key={index} onClick={() => handleDemoClick(demo)}>
+              {demo.demoName}
+            </MenuItem>
+          ))}
+        </Menu>
+        <IconButton color="inherit" onClick={handleSettingsMenu}>
           <SettingsIcon color="primary" />
         </IconButton>
         <Menu
           id="settings-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
+          anchorEl={settingsMenuAnchorEl}
+          open={Boolean(settingsMenuAnchorEl)}
+          onClose={closeSettingsMenu}
         >
-          <MenuItem onClick={handleClose}>
+          <MenuItem>
             <FormGroup>
               <FormControlLabel
                 control={
@@ -90,6 +121,12 @@ function App() {
       </div>
       <div className="App">
         <FileInput />
+        {selectedDemo && (
+          <DemoResultsContainer
+            demoName={selectedDemo.demoName}
+            demoResults={selectedDemo.result}
+          />
+        )}
       </div>
     </ThemeProvider>
   );

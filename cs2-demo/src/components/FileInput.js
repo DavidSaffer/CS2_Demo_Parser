@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import ProgressBar from "react-bootstrap/ProgressBar";
 import Button from "react-bootstrap/Button";
-import {
-  saveAnalysisResult,
-  fetchAnalysisResults,
-} from "../utils/demoStorageUtil";
+import { saveAnalysisResult } from "../utils/demoStorageUtil";
 
 import PlayerStatsTable from "./player-stats/PlayerStatsTable";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useTheme } from "@mui/material/styles";
 import styles from "./FileInput.module.css";
+import pako from "pako";
+import Modal from "react-bootstrap/Modal";
 
 function FileInput() {
   const [messages, setMessages] = useState([]);
   const [progress, setProgress] = useState(0);
   const [isLoading, setLoading] = useState(false); // Manage loading state for the button
   const [playerStats, setPlayerStats] = useState({});
+  const [decompressing, setDecompressing] = useState(false);
   const fileRef = useRef(null); // Use useRef here
   const workerRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -74,9 +74,47 @@ function FileInput() {
   }, [messages]);
 
   const handleFileChange = (event) => {
-    fileRef.current = event.target.files[0]; // Set the file in the ref
+    const file = event.target.files[0];
+    if (!file) {
+      appendMessage("No file selected.");
+      return;
+    }
+
+    const fileName = file.name;
     setMessages([]);
     setProgress(0);
+
+    if (fileName.endsWith(".dem.gz")) {
+      setDecompressing(true);
+      const reader = new FileReader();
+      reader.onload = ({ target: { result } }) => {
+        try {
+          // Decompress the file using pako. Assume the content is binary.
+          const decompressed = pako.inflate(new Uint8Array(result));
+          // Create a blob from the decompressed binary data
+          const blob = new Blob([decompressed], {
+            type: "application/octet-stream",
+          });
+          // Set the file reference to a new File object created from the blob, removing the .gz extension
+          fileRef.current = new File([blob], fileName.replace(".gz", ""), {
+            type: "application/octet-stream",
+          });
+          appendMessage("File loaded and decompressed.");
+        } catch (error) {
+          console.error("Error decompressing the file:", error);
+          appendMessage("Error decompressing the file.");
+          setLoading(false);
+          setDecompressing(false);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    } else if (fileName.endsWith(".dem")) {
+      fileRef.current = file; // Set the file in the ref if it's a .dem file
+    } else {
+      appendMessage(
+        "Unsupported file type. Please upload a '.dem' or '.dem.gz' file."
+      );
+    }
   };
 
   const handleProcessFile = () => {
@@ -118,12 +156,19 @@ function FileInput() {
 
   return (
     <>
+      {/* <Modal show={decompressing} onHide={() => setDecompressing(false)}>
+        <Modal.Header>
+          <Modal.Title>Processing File</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Decompressing the file, please wait...</Modal.Body>
+        <ProgressBar animated now={100} />
+      </Modal> */}
       <div className={styles.container} style={containerStyle}>
         <input
           type="file"
           className={styles.fileInput}
           onChange={handleFileChange}
-          accept=".dem"
+          accept=".dem,.gz" // Accept both .dem and .dem.gz files
         />
         <Button
           variant="primary"

@@ -89,6 +89,10 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 		return
 	}
 	killerName, victimName := e.Killer.Name, e.Victim.Name
+	// killerID := e.Killer.SteamID64
+	// idMessage := fmt.Sprintf("SteamID = %d Name = %s", killerID, killerName)
+	// js.Global().Call("postMessage", idMessage)
+
 	if killerName == victimName {
 		return // Ignoring self-kills
 	}

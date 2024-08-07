@@ -1,4 +1,5 @@
-// utils.go
+//go:build js && wasm
+
 package main
 
 import (
@@ -28,7 +29,7 @@ func sendError(errorMessage string) {
 }
 
 // sendFinalStats serializes the final statistics to JSON and sends it to JavaScript.
-func sendFinalStats(playerStats map[string]*PlayerStats, roundNum int) {
+func sendFinalStats(playerStats map[uint64]*PlayerStats, roundNum int) {
 	statsJSON, err := json.Marshal(playerStats)
 	if err != nil {
 		sendError("Error encoding player stats to JSON")

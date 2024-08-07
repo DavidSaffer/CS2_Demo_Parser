@@ -1,4 +1,5 @@
-// main.go
+//go:build js && wasm
+
 package main
 
 import (

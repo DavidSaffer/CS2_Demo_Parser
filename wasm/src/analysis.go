@@ -1,4 +1,4 @@
-// analysis.go
+//go:build js && wasm
 
 package main
 
@@ -19,6 +19,7 @@ PlayerStats holds statistics for a player in the demo analysis
   - LightBuyKillRounds: Slice of rounds where the player made light buy kills
 */
 type PlayerStats struct {
+	Name               string
 	Kills              int
 	EcoKills           int
 	LightBuyKills      int
@@ -49,7 +50,7 @@ func AnalyzeDemo(data []byte) {
 	var p dem.Parser = dem.NewParser(progressReader)
 	defer p.Close()
 
-	playerStats := make(map[string]*PlayerStats)
+	playerStats := make(map[uint64]*PlayerStats)
 	roundNum := 1
 
 	RegisterEventHandlers(p, playerStats, &roundNum) // <- Logic is in here
@@ -64,7 +65,7 @@ func AnalyzeDemo(data []byte) {
 	sendFinalStats(playerStats, roundNum)
 }
 
-func RegisterEventHandlers(p dem.Parser, playerStats map[string]*PlayerStats, roundNum *int) {
+func RegisterEventHandlers(p dem.Parser, playerStats map[uint64]*PlayerStats, roundNum *int) {
 	p.RegisterEventHandler(func(e events.RoundEnd) {
 		HandleRoundEnd(roundNum)
 	})
@@ -73,13 +74,17 @@ func RegisterEventHandlers(p dem.Parser, playerStats map[string]*PlayerStats, ro
 		HandleKillEvent(e, playerStats, roundNum)
 	})
 
+	p.RegisterEventHandler(func(e events.PlayerConnect) {
+
+	})
+
 }
 
 func HandleRoundEnd(roundNum *int) {
 	*roundNum++
 }
 
-func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNum *int) {
+func HandleKillEvent(e events.Kill, playerStats map[uint64]*PlayerStats, roundNum *int) {
 	if e.Killer == nil || e.Victim == nil {
 		return
 	}
@@ -89,7 +94,7 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 		return
 	}
 	killerName, victimName := e.Killer.Name, e.Victim.Name
-	// killerID := e.Killer.SteamID64
+	killerID := e.Killer.SteamID64
 	// idMessage := fmt.Sprintf("SteamID = %d Name = %s", killerID, killerName)
 	// js.Global().Call("postMessage", idMessage)
 
@@ -97,9 +102,26 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 		return // Ignoring self-kills
 	}
 
+	if killerID == 0 {
+		debugMsg := fmt.Sprintf("SteamID = %d Name = %s", killerID, killerName)
+		js.Global().Call("postMessage", debugMsg)
+		return // This happened idk how? or why? game had bot
+	}
+	if e.Victim.SteamID64 == 0 {
+		debugMsg := fmt.Sprintf("SteamID = %d Name = %s", e.Victim.SteamID64, victimName)
+		js.Global().Call("postMessage", debugMsg)
+		return // This happened idk how? or why?
+	}
+
 	victimValue := e.Victim.EquipmentValueCurrent()
 
 	killerWeapons, victimWeapons := e.Killer.Weapons(), e.Victim.Weapons()
+	// Something is happening - since there was a bot, the inventory is sometimes just randomly empty?
+	// on faceit - round = round + 2
+	if len(killerWeapons) == 0 || len(victimWeapons) == 0 {
+		js.Global().Call("postMessage", "Error: Inventory empty - This game probally had a bot")
+	}
+
 	killerPrimaryWeapon, victimPrimaryWeapon := getPrimaryWeapon(killerWeapons), getPrimaryWeapon(victimWeapons)
 
 	killerHasMoreThanPistol, killerHasRifle := getKillerWeaponInfo(killerPrimaryWeapon)
@@ -109,23 +131,27 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 	victimArmor := e.Victim.Armor()
 
 	// Initialize stats if the player is not already in the map
-	if _, ok := playerStats[killerName]; !ok {
-		playerStats[killerName] = &PlayerStats{
+	if _, ok := playerStats[killerID]; !ok {
+		playerStats[killerID] = &PlayerStats{
+			Name:               killerName,
 			Team:               e.Killer.Team - 1,
 			EcoKillRounds:      []int{},
 			LightBuyKillRounds: []int{},
 		}
 	}
-	if _, ok := playerStats[victimName]; !ok {
-		playerStats[victimName] = &PlayerStats{
-			Team:               e.Victim.Team - 1,
-			EcoKillRounds:      []int{},
-			LightBuyKillRounds: []int{},
+	if e.Victim.SteamID64 != 0 {
+		if _, ok := playerStats[e.Victim.SteamID64]; !ok {
+			playerStats[e.Victim.SteamID64] = &PlayerStats{
+				Name:               victimName,
+				Team:               e.Victim.Team - 1,
+				EcoKillRounds:      []int{},
+				LightBuyKillRounds: []int{},
+			}
 		}
 	}
 
-	playerStats[killerName].Kills++
-	playerStats[killerName].TotalValue += victimValue
+	playerStats[killerID].Kills++
+	playerStats[killerID].TotalValue += victimValue
 
 	// isHero := (!killerHasMoreThanPistol && !victimHasBadGun)
 	// if isHero {
@@ -135,73 +161,16 @@ func HandleKillEvent(e events.Kill, playerStats map[string]*PlayerStats, roundNu
 	// Check if it's an eco kill
 	isEco := (killerHasMoreThanPistol && !victimHasMoreThanPistol) && (killerArmor > 0 && victimArmor == 0)
 	if isEco {
-		playerStats[killerName].EcoKills++
-		playerStats[killerName].EcoKillRounds = append(playerStats[killerName].EcoKillRounds, *roundNum) // Record the round number
-		updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s used: %s - against: %s armor: %d\n", *roundNum, killerName, killerPrimaryWeapon.String(), victimPrimaryWeapon.String(), victimArmor)
+		playerStats[killerID].EcoKills++
+		playerStats[killerID].EcoKillRounds = append(playerStats[killerID].EcoKillRounds, *roundNum) // Record the round number
+		updateMessage3 := fmt.Sprintf("Eco Kill - Round: %d Killer: %s used: %s - against: %s armor: %d\n", *roundNum, killerName, killerPrimaryWeapon.Type.String(), victimPrimaryWeapon.Type.String(), victimArmor)
 		js.Global().Call("postMessage", updateMessage3)
 	}
 	isLightBuyKill := (killerHasMoreThanPistol && !victimHasMoreThanPistol) || (killerHasRifle && victimHasBadGun)
 	if !isEco && isLightBuyKill {
-		playerStats[killerName].LightBuyKills++
-		playerStats[killerName].LightBuyKillRounds = append(playerStats[killerName].LightBuyKillRounds, *roundNum)
-		updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used: %s - against: %s armor: %d", *roundNum, killerName, killerPrimaryWeapon.String(), victimPrimaryWeapon.String(), victimArmor)
+		playerStats[killerID].LightBuyKills++
+		playerStats[killerID].LightBuyKillRounds = append(playerStats[killerID].LightBuyKillRounds, *roundNum)
+		updateMessage := fmt.Sprintf("Light Buy Kill - Round: %d Killer: %s used: %s - against: %s armor: %d", *roundNum, killerName, killerPrimaryWeapon.Type.String(), victimPrimaryWeapon.Type.String(), victimArmor)
 		js.Global().Call("postMessage", updateMessage)
 	}
-
-}
-
-// Get the "best" weapon in their inventory.
-// If they have a primary, its the primary.
-// If no primary, itll be their 2ndary - then knife.
-func getPrimaryWeapon(weapons []*common.Equipment) common.Equipment {
-	if len(weapons) == 0 {
-		return common.Equipment{}
-	}
-	var primaryWeapon common.Equipment
-	for _, weapon := range weapons {
-		weaponClass := (weapon.Type + 99) / 100
-		if weaponClass >= 2 && weaponClass <= 4 {
-			primaryWeapon = *weapon
-			return primaryWeapon
-		}
-		if weaponClass == 1 {
-			primaryWeapon = *weapon
-		}
-	}
-	return primaryWeapon
-}
-
-// Calculate wether killer has more than a pistol, and if the killer has a rifle
-func getKillerWeaponInfo(killerPrimaryWeapon common.Equipment) (hasMoreThanPistol, hasRifle bool) {
-	weaponClass := (killerPrimaryWeapon.Type + 99) / 100
-	if weaponClass >= 2 && weaponClass <= 4 {
-		hasMoreThanPistol = true
-	}
-	if weaponClass == 4 {
-		if killerPrimaryWeapon.Type != 306 { // Exclude scout
-			hasRifle = true
-		}
-	}
-	if killerPrimaryWeapon.Type == 106 { // Include P90
-		hasRifle = true
-	}
-	return
-}
-
-// Calculate if the victim has more than a pistol, and if they had a "bad gun (non rifle)"
-func getVictimWeaponInfo(killerPrimaryWeapon common.Equipment) (hasMoreThanPistol, hasBadGun bool) {
-	weaponClass := (killerPrimaryWeapon.Type + 99) / 100
-	if weaponClass >= 2 && weaponClass <= 4 { // SMG, Heavy, Rifle
-		hasMoreThanPistol = true
-	}
-	if weaponClass == 2 || weaponClass == 3 { // SMG, Heavy
-		hasBadGun = true
-	}
-	if killerPrimaryWeapon.Type == 306 { // Include scout
-		hasBadGun = true
-	}
-	if killerPrimaryWeapon.Type == 106 { // Exclude P90
-		hasBadGun = false
-	}
-	return
 }

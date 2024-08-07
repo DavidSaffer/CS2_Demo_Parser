@@ -8,7 +8,7 @@ export GOOS=js
 export GOARCH=wasm
 
 # Build the WebAssembly binary with optimizations
-go build -ldflags="-s -w" -o ../static/main.wasm main.go analysis.go utils.go
+go build -ldflags="-s -w" -o ../static/main.wasm main.go analysis.go utils.go analysis_helpers.go
 
 # Compress the WebAssembly binary with maximum compression
 gzip -9 -f -k ../static/main.wasm

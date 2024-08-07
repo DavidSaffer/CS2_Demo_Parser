@@ -77,7 +77,6 @@ func RegisterEventHandlers(p dem.Parser, playerStats map[uint64]*PlayerStats, ro
 	p.RegisterEventHandler(func(e events.PlayerConnect) {
 
 	})
-
 }
 
 func HandleRoundEnd(roundNum *int) {

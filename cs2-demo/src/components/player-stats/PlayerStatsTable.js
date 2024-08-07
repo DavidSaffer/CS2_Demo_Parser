@@ -18,6 +18,7 @@ import TeamBarChart from "../bar-graph/TeamBarChart";
 import styles from "./PlayerStatsTable.module.css";
 
 const PlayerStatsTable = ({ playerStats }) => {
+  console.log("PLAYERSTATS TABLE: ", playerStats)
   const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("EcoKills");
   const [expanded, setExpanded] = useState({});
@@ -132,7 +133,7 @@ const PlayerStatsTable = ({ playerStats }) => {
                 {sortedPlayerStats.map(([player, stats]) => (
                   <TableRow key={player}>
                     <TableCell style={{ textAlign: "center" }}>
-                      {player}
+                      {stats.Name}
                     </TableCell>
                     <TableCell style={{ textAlign: "center" }}>
                       {stats.Kills}

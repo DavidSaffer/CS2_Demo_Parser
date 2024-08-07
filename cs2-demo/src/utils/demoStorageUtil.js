@@ -55,6 +55,7 @@ export const fetchPlayerStats = (minGames = 2) => {
       Object.entries(demo.result).forEach(([playerName, stats]) => {
           if (!playerStats[playerName]) {
               playerStats[playerName] = {
+                name: "",
                   gamesPlayed: 0,
                   totalKills: 0,
                   EcoKills: 0,
@@ -62,6 +63,7 @@ export const fetchPlayerStats = (minGames = 2) => {
                   TotalValue: 0
               };
           }
+          playerStats[playerName].name = stats.Name;
           playerStats[playerName].gamesPlayed += 1;
           playerStats[playerName].totalKills += stats.Kills;
           playerStats[playerName].EcoKills += stats.EcoKills;

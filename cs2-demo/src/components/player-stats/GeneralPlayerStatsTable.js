@@ -13,6 +13,7 @@ import {
 import styles from "./PlayerStatsTable.module.css";
 
 const GeneralPlayerStatsTable = ({ playerStats }) => {
+  console.log(playerStats)
   const [order, setOrder] = useState("desc");
   const [orderBy, setOrderBy] = useState("totalKills");
 
@@ -54,7 +55,7 @@ const GeneralPlayerStatsTable = ({ playerStats }) => {
         valueA = a[1][orderBy];
         valueB = b[1][orderBy];
     }
-    
+
       return order === "asc" ? valueA - valueB : valueB - valueA;
     });
   }, [playerStats, orderBy, order]);
@@ -82,7 +83,7 @@ const GeneralPlayerStatsTable = ({ playerStats }) => {
           <TableBody>
             {sortedPlayerStats.map(([player, stats]) => (
               <TableRow key={player}>
-                <TableCell>{player}</TableCell>
+                <TableCell>{stats.name}</TableCell>
                 <TableCell>{stats.gamesPlayed}</TableCell>
                 <TableCell>{stats.totalKills}</TableCell>
                 <TableCell>{stats.EcoKills}</TableCell>

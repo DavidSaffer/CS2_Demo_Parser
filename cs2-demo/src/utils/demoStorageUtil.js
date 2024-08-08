@@ -47,37 +47,37 @@ export const fetchAnalysisResults = () => {
 };
 
 export const fetchPlayerStats = (minGames = 2) => {
-  const allDemos = fetchAnalysisResults();  // This would fetch all current demos
+  const allDemos = fetchAnalysisResults();
   const playerStats = {};
 
   // Aggregate player stats from each demo
-  allDemos.forEach(demo => {
-      Object.entries(demo.result).forEach(([playerName, stats]) => {
-          if (!playerStats[playerName]) {
-              playerStats[playerName] = {
-                name: "",
-                  gamesPlayed: 0,
-                  totalKills: 0,
-                  EcoKills: 0,
-                  LightBuyKills: 0,
-                  TotalValue: 0
-              };
-          }
-          playerStats[playerName].name = stats.Name;
-          playerStats[playerName].gamesPlayed += 1;
-          playerStats[playerName].totalKills += stats.Kills;
-          playerStats[playerName].EcoKills += stats.EcoKills;
-          playerStats[playerName].LightBuyKills += stats.LightBuyKills;
-          playerStats[playerName].TotalValue += stats.TotalValue;
-      });
+  allDemos.forEach((demo) => {
+    Object.entries(demo.result).forEach(([playerName, stats]) => {
+      if (!playerStats[playerName]) {
+        playerStats[playerName] = {
+          name: "",
+          gamesPlayed: 0,
+          totalKills: 0,
+          EcoKills: 0,
+          LightBuyKills: 0,
+          TotalValue: 0,
+        };
+      }
+      playerStats[playerName].name = stats.Name;
+      playerStats[playerName].gamesPlayed += 1;
+      playerStats[playerName].totalKills += stats.Kills;
+      playerStats[playerName].EcoKills += stats.EcoKills;
+      playerStats[playerName].LightBuyKills += stats.LightBuyKills;
+      playerStats[playerName].TotalValue += stats.TotalValue;
+    });
   });
 
   // Filter stats based on the minimum games played
   const filteredStats = {};
   Object.entries(playerStats).forEach(([playerName, stats]) => {
-      if (stats.gamesPlayed >= minGames) {
-          filteredStats[playerName] = stats;
-      }
+    if (stats.gamesPlayed >= minGames) {
+      filteredStats[playerName] = stats;
+    }
   });
 
   return filteredStats;

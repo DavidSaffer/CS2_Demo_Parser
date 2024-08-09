@@ -14,6 +14,8 @@ import Batch from "./pages/Batch";
 import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 
+import { FileProvider } from "./context/fileContext";
+
 const LayoutContainer = styled.div`
   display: grid;
   grid-template-columns: 200px 1fr; // Sidebar takes 200px, main content takes the rest
@@ -57,15 +59,17 @@ const App: React.FC = () => {
   };
 
   return (
-    <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
-      <GlobalStyle />
-      <LayoutContainer>
-        <TopNav />
-        <Logo />
-        <SideNav />
-        <MainContent>{renderPage()}</MainContent>
-      </LayoutContainer>
-    </ThemeProvider>
+    <FileProvider>
+      <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
+        <GlobalStyle />
+        <LayoutContainer>
+          <TopNav />
+          <Logo />
+          <SideNav />
+          <MainContent>{renderPage()}</MainContent>
+        </LayoutContainer>
+      </ThemeProvider>
+    </FileProvider>
   );
 };
 

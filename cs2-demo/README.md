@@ -12,6 +12,7 @@ src/
 │   └── store.ts             # Setup and configuration of the Redux store
 │
 ├── components/              # Reusable UI components
+│   ├── layout/              # Components for the top&side nav bars
 │   └── StyledComponent.tsx  # Example of a styled component using styled-components
 │
 ├── features/                # Modular features containing logic and UI components

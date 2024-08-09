@@ -11,5 +11,12 @@ declare module 'styled-components' {
       hover: string;
       compliment: string;
     };
+    table: {
+      header: string;
+      body: string;
+      divider: string;
+      text: string;
+      hover: string;
+    };
   }
 }

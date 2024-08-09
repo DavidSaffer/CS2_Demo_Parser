@@ -15,6 +15,7 @@ import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 
 import { FileProvider } from "./context/fileContext";
+import { DemoWorkerProvider } from "./context/demoWorkerContext";
 
 const LayoutContainer = styled.div`
   display: grid;
@@ -60,15 +61,17 @@ const App: React.FC = () => {
 
   return (
     <FileProvider>
-      <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
-        <GlobalStyle />
-        <LayoutContainer>
-          <TopNav />
-          <Logo />
-          <SideNav />
-          <MainContent>{renderPage()}</MainContent>
-        </LayoutContainer>
-      </ThemeProvider>
+      <DemoWorkerProvider>
+        <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
+          <GlobalStyle />
+          <LayoutContainer>
+            <TopNav />
+            <Logo />
+            <SideNav />
+            <MainContent>{renderPage()}</MainContent>
+          </LayoutContainer>
+        </ThemeProvider>
+      </DemoWorkerProvider>
     </FileProvider>
   );
 };

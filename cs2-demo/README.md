@@ -4,26 +4,52 @@
 - Styled Components
 - Redux
 
-## File Structure
-```
-src/
-├── app/                     # Configuration and setup for Redux
-│   ├── hooks.ts             # Custom React hooks, including Redux hooks for state management
-│   └── store.ts             # Setup and configuration of the Redux store
-│
-├── components/              # Reusable UI components
-│   ├── layout/              # Components for the top&side nav bars
-│   └── StyledComponent.tsx  # Example of a styled component using styled-components
-│
-├── features/                # Modular features containing logic and UI components
-│   └── theme/               # Theme management functionality
-│       ├── ThemeSwitch.tsx  # Component to toggle between light and dark themes
-│       └── themeSlice.ts    # Redux slice for managing theme-related state
-│
-├── theme/                   # Styling and theming configurations
-│   ├── GlobalStyle.tsx      # Global styles defined using styled-components
-│   └── styledTheme.ts       # Theme definitions for light and dark modes
-│
-└── types/                   # Custom TypeScript types and extensions
-    └── styled.d.ts          # Extensions for styled-components' default theme to include custom properties
-```
+## Design
+### Contexts
+<details>
+    <summary><span>DemoWorker Context</span></summary>
+<p>
+
+**Purpose**:  Handles interactions with a web worker, which performs tasks in a background thread to prevent blocking the main UI thread
+
+**Key Functionality**:
+- ```postMessage(data: ArrayBuffer)```: Sends binary data to the worker for processing
+  
+</p>
+</details>
+
+<details>
+    <summary><span>File Context</span></summary>
+<p>
+
+**Purpose**: Track a file that the user uploads and make it accessabel to any component
+
+**Key Functionality**:
+- ```file```: Holds the current file object
+- ```setFile(file: File | null)```: Updates the file state, allowing new files to be set or the current file to be cleared
+  
+</p>
+</details>
+
+### Redux Store
+
+<details>
+  <summary><strong>Redux Slices</strong></summary>
+  <p>
+
+**DemoParse Slice**
+
+- Purpose: Manages the state related to parsing data returned from the web worker.
+- 
+Actions:
+- ```setProgress(progress: number)```: Updates the parsing progress.
+- ```setFinalData(data: any)```: Stores the final parsed data.
+- ```setError(error: string)```: Records any errors that occur during parsing.
+
+**Navigation Slice**: Manages navigation-related state, such as the current active page
+
+**Theme Slice**: Stores UI theming preferences and allows dynamic theme switching
+
+</p>
+</details>
+

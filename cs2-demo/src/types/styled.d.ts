@@ -11,5 +11,9 @@ declare module 'styled-components' {
       hover: string;
       compliment: string;
     };
+    progressBar: {
+      background: string;
+      value: string;
+    }
   }
 }

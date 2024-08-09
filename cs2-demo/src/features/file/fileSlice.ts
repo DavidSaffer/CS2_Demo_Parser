@@ -1,4 +1,4 @@
-// src/features/fileSlice.ts
+// src/features/file/fileSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface FileState {

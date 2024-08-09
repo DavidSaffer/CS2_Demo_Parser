@@ -10,6 +10,10 @@ export const lightTheme: DefaultTheme = {
     hover: '#69AF90',
     compliment: '#C37597',
   },
+  progressBar: {
+    background: '#3C473C',
+    value: '#c7ffc3',
+  }
 };
 
 export const darkTheme: DefaultTheme = {
@@ -19,6 +23,10 @@ export const darkTheme: DefaultTheme = {
     accent: '#828282',
     text: '#ffffff',
     hover: '#2F443B',
-    compliment: '#301923'
+    compliment: '#301923',
   },
+  progressBar: {
+    background: '#c7ffc3',
+    value: '#234d20',
+  }
 };

@@ -1,5 +1,5 @@
 import React from "react";
-
+import { useEffect, useState } from "react";
 // Updated interface to include includeText parameter
 interface ProgressBarProps {
   barValueColor: string; // Hex color for the bar's progress indicator
@@ -18,6 +18,15 @@ const CustomProgressBar: React.FC<ProgressBarProps> = ({
   height,
   includeText, // Deconstruct includeText from props
 }) => {
+  const [shouldIncludeText, setShouldIncludeText] = useState(false);
+  useEffect(() => {
+    if (includeText) {
+      if (progress >= 5) {
+        setShouldIncludeText(true);
+      }
+    }
+  }, [progress, includeText]);
+
   const parentDivStyle = {
     height: height,
     width: "100%",
@@ -45,7 +54,9 @@ const CustomProgressBar: React.FC<ProgressBarProps> = ({
   return (
     <div style={parentDivStyle}>
       <div style={childDivStyle}>
-        {includeText && <span style={progressTextStyle}>{`${progress}%`}</span>}
+        {shouldIncludeText && (
+          <span style={progressTextStyle}>{`${progress}%`}</span>
+        )}
       </div>
     </div>
   );

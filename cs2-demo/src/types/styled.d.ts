@@ -14,6 +14,10 @@ declare module 'styled-components' {
     progressBar: {
       background: string;
       value: string;
-    }
+    };
+    table: {
+      headerColor: string;
+      cellColor: string;
+    };
   }
 }

@@ -13,13 +13,17 @@ export const lightTheme: DefaultTheme = {
   progressBar: {
     background: '#3C473C',
     value: '#c7ffc3',
+  },
+  table: {
+    headerColor: "",
+    cellColor: ""
   }
 };
 
 export const darkTheme: DefaultTheme = {
   colors: {
     background: '#081C15',
-    secondary: '#193026',
+    secondary: '#1e251e',
     accent: '#828282',
     text: '#ffffff',
     hover: '#2F443B',
@@ -28,5 +32,9 @@ export const darkTheme: DefaultTheme = {
   progressBar: {
     background: '#c7ffc3',
     value: '#234d20',
+  },
+  table: {
+    headerColor: "#193026",
+    cellColor: ""
   }
 };
